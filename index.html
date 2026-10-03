@@ -1,0 +1,2410 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سایت مدیریت پروژه ۴ ویلا — لواسان</title>
+<style>
+  @font-face { font-family: 'Vazirmatn'; src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Vazirmatn', 'Vazir', Tahoma, sans-serif; }
+  body { overflow:hidden; background:#0a0f1c; color:#e8ecf1; letter-spacing:0; }
+  h1,h2,h3,.card h2,.front .fr,.dcard .num { font-weight:600; }
+  input, select, textarea, button { font-family:'Vazirmatn', Tahoma, sans-serif; }
+  button { font-family:'Vazirmatn'; }
+
+  /* ===== نوار بالا ===== */
+  #navbar { position:fixed; top:0; right:0; left:0; height:56px; display:flex; align-items:center; gap:8px;
+    padding:0 18px; background:rgba(12,17,30,.92); backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(255,255,255,.08); z-index:100; }
+  #navbar .logo { font-size:15px; font-weight:700; margin-left:20px; }
+  #navbar .logo span { color:#f4a833; }
+  .navbtn { padding:8px 16px; border-radius:10px; border:none; background:transparent; color:#a8b3c4;
+    cursor:pointer; font-size:13px; transition:.2s; }
+  .navbtn:hover { background:rgba(255,255,255,.07); color:#fff; }
+  .navbtn.active { background:linear-gradient(135deg,#f4a833,#e8912a); color:#1a1408; font-weight:700; }
+  #navbar .date { margin-right:auto; font-size:11px; color:#5d6a80; }
+
+  .view { position:fixed; top:56px; right:0; left:0; bottom:0; display:none; overflow-y:auto; }
+  #viewModel { overflow:hidden; }
+  .view.active { display:block; }
+
+  /* ===== نمای سه‌بعدی ===== */
+  #scene3d { position:absolute; inset:0; }
+  #frontBar { position:absolute; top:12px; right:12px; bottom:12px; width:300px; display:flex; flex-direction:column; gap:8px; z-index:5; pointer-events:none; }
+  #frontBar > * { pointer-events:auto; }
+  #frontList { flex:1; overflow-y:auto; background:rgba(14,20,36,.88); backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:10px; }
+  #frontList::-webkit-scrollbar { width:5px; }
+  #frontList::-webkit-scrollbar-thumb { background:#2c3a55; border-radius:3px; }
+  .flabel { font-size:11px; color:#8b96a8; font-weight:700; margin:6px 4px; }
+  .front { padding:9px 11px; border-radius:10px; margin-bottom:6px; cursor:pointer; transition:.2s;
+    background:rgba(255,255,255,.04); border:1px solid transparent; }
+  .front:hover { background:rgba(255,255,255,.09); }
+  .front.sel { border-color:var(--c); background:rgba(255,255,255,.08); }
+  .front .fr { display:flex; align-items:center; gap:8px; font-size:12.5px; }
+  .front .dot { width:9px; height:9px; border-radius:50%; background:var(--c); flex-shrink:0; box-shadow:0 0 8px var(--c); }
+  .front .pct { margin-right:auto; font-size:11px; font-weight:700; color:var(--c); }
+  .front .mini { height:4px; border-radius:2px; background:#1d2740; margin-top:6px; overflow:hidden; }
+  .front .mini i { display:block; height:100%; background:var(--c); border-radius:2px; }
+  #hint3d { position:absolute; bottom:14px; right:50%; transform:translateX(50%); font-size:11px; color:#5d6a80; z-index:5;
+    background:rgba(14,20,36,.7); padding:6px 16px; border-radius:20px; }
+
+  /* ===== پاپ‌آپ پین ===== */
+  #popup { position:fixed; max-width:310px; background:rgba(16,22,38,.97); border:1px solid rgba(255,255,255,.15);
+    border-radius:14px; z-index:200; display:none; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,.55); }
+  #popup .pimg { width:100%; height:150px; object-fit:cover; display:block; }
+  #popup .pbody { padding:12px 14px; }
+  #popup h3 { font-size:13px; margin-bottom:4px; }
+  #popup p { font-size:11px; color:#a8b3c4; line-height:1.8; }
+  #popup .ptag { display:inline-block; font-size:10px; padding:2px 8px; border-radius:6px; margin-top:8px; font-weight:700; }
+  #pclose { position:absolute; top:8px; left:8px; width:26px; height:26px; border-radius:50%; border:none;
+    background:rgba(0,0,0,.55); color:#fff; cursor:pointer; font-size:14px; z-index:2; }
+
+  /* ===== مودال پلان ===== */
+  #planModal { position:fixed; inset:0; background:rgba(5,8,15,.8); backdrop-filter:blur(6px); z-index:300;
+    display:none; align-items:center; justify-content:center; }
+  #planModal .box { width:min(860px, 94vw); max-height:92vh; background:#141b2e; border:1px solid rgba(255,255,255,.12);
+    border-radius:18px; overflow:hidden; display:flex; flex-direction:column; }
+  #planModal .phead { padding:14px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,.08); }
+  #planModal .phead h3 { font-size:15px; flex:1; }
+  #planModal .ptabs { display:flex; gap:5px; }
+  .ptab { padding:6px 14px; border-radius:8px; border:1px solid rgba(255,255,255,.12); background:transparent;
+    color:#a8b3c4; font-size:12px; cursor:pointer; }
+  .ptab.active { background:#3a86ff; color:#fff; border-color:#3a86ff; font-weight:700; }
+  #planBody { padding:16px; overflow:auto; display:flex; justify-content:center; }
+  #planBody svg { background:#f5f1e8; border-radius:10px; width:100%; height:auto; }
+  #pclose2 { width:30px; height:30px; border-radius:8px; border:none; background:rgba(255,255,255,.08); color:#fff; cursor:pointer; }
+
+  /* ===== گزارش روزانه ===== */
+  #viewReport { overflow-y:auto; padding:24px; background:
+    radial-gradient(1000px 500px at 80% -10%, rgba(58,134,255,.08), transparent), #0a0f1c; }
+  .card { max-width:860px; margin:0 auto 20px; background:rgba(18,25,42,.85); border:1px solid rgba(255,255,255,.09);
+    border-radius:16px; padding:22px; }
+  .card h2 { font-size:16px; margin-bottom:16px; color:#fff; }
+  .frow { display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+  .fgroup { flex:1; min-width:150px; display:flex; flex-direction:column; gap:5px; }
+  .fgroup label { font-size:11px; color:#8b96a8; }
+  .fgroup input, .fgroup select, .fgroup textarea { background:#0f1626; border:1px solid rgba(255,255,255,.12);
+    border-radius:9px; padding:9px 12px; color:#e8ecf1; font-size:13px; font-family:'Vazirmatn'; outline:none; }
+  .fgroup textarea { min-height:80px; resize:vertical; line-height:1.8; }
+  .fgroup input:focus, .fgroup select:focus, .fgroup textarea:focus { border-color:#f4a833; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { padding:6px 13px; border-radius:18px; border:1px solid rgba(255,255,255,.14); background:transparent;
+    color:#a8b3c4; font-size:12px; cursor:pointer; }
+  .chip.on { background:var(--c); color:#fff; border-color:var(--c); font-weight:700; }
+  .manpower { display:flex; align-items:center; gap:8px; }
+  .manpower button { width:30px; height:30px; border-radius:8px; border:1px solid rgba(255,255,255,.15);
+    background:#0f1626; color:#fff; cursor:pointer; font-size:15px; }
+  .manpower span { min-width:34px; text-align:center; font-weight:700; }
+  .btn { padding:10px 22px; border-radius:10px; border:none; cursor:pointer; font-size:13px; font-weight:700; transition:.2s; }
+  .btn-p { background:linear-gradient(135deg,#f4a833,#e8912a); color:#1a1408; }
+  .btn-p:hover { filter:brightness(1.1); }
+  .btn-s { background:rgba(255,255,255,.08); color:#c6cedb; }
+  .btn-g { background:#2fbf71; color:#fff; }
+  .photoDrop { border:2px dashed rgba(255,255,255,.18); border-radius:12px; padding:18px; text-align:center;
+    color:#5d6a80; font-size:12px; cursor:pointer; transition:.2s; }
+  .photoDrop:hover { border-color:#f4a833; color:#8b96a8; }
+  .thumbs { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .thumbs img { width:74px; height:74px; object-fit:cover; border-radius:9px; border:1px solid rgba(255,255,255,.15); }
+
+  .ritem { border:1px solid rgba(255,255,255,.08); border-radius:13px; padding:14px; margin-bottom:10px;
+    background:rgba(255,255,255,.03); }
+  .rhead { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:700; }
+  .badge { font-size:10px; padding:3px 10px; border-radius:14px; font-weight:700; }
+  .b-draft { background:rgba(244,168,51,.15); color:#f4a833; }
+  .b-sent { background:rgba(47,191,113,.15); color:#2fbf71; }
+  .rbody { font-size:12px; color:#a8b3c4; margin-top:8px; line-height:1.9; white-space:pre-wrap; }
+  .rimgs { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .rimgs img { width:64px; height:64px; object-fit:cover; border-radius:8px; cursor:pointer; }
+  .ractions { display:flex; gap:8px; margin-top:10px; }
+  .ractions .btn { padding:6px 14px; font-size:11.5px; }
+  .empty { text-align:center; color:#5d6a80; font-size:12px; padding:26px; }
+
+  /* ===== بخش‌های گزارش ===== */
+  .rsec { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:13px; padding:14px; margin-bottom:12px; }
+  .rsecHead { display:flex; align-items:center; font-size:13px; font-weight:700; margin-bottom:10px; }
+  .rsecHead .addRow { margin-right:auto; padding:4px 12px; font-size:10.5px; }
+  .rsecTotal { font-size:11.5px; color:#f4a833; font-weight:700; margin-top:8px; text-align:left; }
+  .drow { display:flex; gap:8px; margin-bottom:6px; align-items:center; flex-wrap:wrap; }
+  .drow input, .drow select { background:#0f1626; border:1px solid rgba(255,255,255,.1); border-radius:8px;
+    padding:7px 10px; color:#e8ecf1; font-size:12px; font-family:'Vazirmatn'; outline:none; min-width:0; }
+  .drow input:focus, .drow select:focus { border-color:#f4a833; }
+  .drow .num { width:70px; }
+  .drow .money { width:110px; }
+  .drow .del { width:28px; height:30px; border-radius:8px; border:none; background:rgba(224,82,82,.15);
+    color:#e05252; cursor:pointer; font-size:13px; flex-shrink:0; }
+  .drow .del:hover { background:rgba(224,82,82,.3); }
+  .rsum { display:flex; gap:14px; flex-wrap:wrap; margin:10px 0 4px; }
+  .rsum .box { background:rgba(58,134,255,.1); border:1px solid rgba(58,134,255,.25); border-radius:10px;
+    padding:8px 16px; font-size:12px; }
+  .rsum .box b { color:#3a86ff; }
+
+  /* آیتم چک‌لیست WBS */
+  .witem { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:9px; margin-bottom:4px;
+    background:rgba(255,255,255,.03); font-size:12.5px; cursor:pointer; transition:.15s; }
+  .witem:hover { background:rgba(255,255,255,.08); }
+  .witem.done { opacity:.5; text-decoration:line-through; }
+  .witem .del { margin-right:auto; border:none; background:none; color:#e05252; cursor:pointer; opacity:0; font-size:12px; }
+  .witem:hover .del { opacity:.8; }
+
+  /* گالری */
+  .gal { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+  .gal .gitem { position:relative; border-radius:12px; overflow:hidden; cursor:pointer; border:1px solid rgba(255,255,255,.1); }
+  .gal .gitem img { width:100%; height:130px; object-fit:cover; display:block; transition:.25s; }
+  .gal .gitem:hover img { transform:scale(1.06); }
+  .gal .gcap { position:absolute; bottom:0; right:0; left:0; background:linear-gradient(transparent, rgba(0,0,0,.85));
+    padding:18px 10px 7px; font-size:10.5px; color:#fff; }
+  /* یادآور */
+  .rem { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:11px; margin-bottom:7px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); font-size:12.5px; }
+  .rem.urgent { background:rgba(224,82,82,.12); border-color:rgba(224,82,82,.35); }
+  .rem.done { opacity:.45; text-decoration:line-through; }
+
+  /* حالت کارفرما (فقط دیدن) */
+  body.viewer .btn-p, body.viewer .btn-g, body.viewer .addRow, body.viewer .drow .del,
+  body.viewer #cAdd, body.viewer .ractions, body.viewer #lockBtn { display:none !important; }
+  body.viewer input, body.viewer select, body.viewer textarea { opacity:.6; pointer-events:none; }
+  #viewerBadge { position:fixed; top:60px; right:50%; transform:translateX(50%); background:rgba(58,134,255,.2);
+    border:1px solid rgba(58,134,255,.4); color:#7db4ff; padding:4px 18px; border-radius:16px; font-size:11px;
+    z-index:90; display:none; }
+  #viewerBadge.show { display:block; }
+
+  /* ===== نظرات ===== */
+  .comment { border-radius:13px; padding:14px; margin-bottom:10px; border:1px solid rgba(255,255,255,.08); }
+  .comment .chead { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .avatar { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+  .role { font-size:10px; padding:2px 8px; border-radius:10px; }
+  .cbody { font-size:12.5px; color:#c6cedb; margin:9px 4px 0 38px; line-height:1.9; }
+  .cmeta { font-size:10px; color:#5d6a80; margin:5px 4px 0 38px; }
+  .comment.resolved { opacity:.5; }
+  .resolvedmark { color:#2fbf71; font-size:11px; }
+
+  /* ===== داشبورد ===== */
+  #viewDash { overflow-y:auto; padding:24px; }
+  .dgrid { max-width:1000px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; }
+  .dcard { background:rgba(18,25,42,.85); border:1px solid rgba(255,255,255,.09); border-radius:16px; padding:18px; cursor:pointer; transition:.2s; }
+  .dcard:hover { transform:translateY(-3px); border-color:var(--c); }
+  .dcard h3 { font-size:13px; display:flex; align-items:center; gap:8px; }
+  .dcard .num { font-size:30px; font-weight:700; color:var(--c); margin:8px 0 4px; }
+  .dcard .sub { font-size:11px; color:#8b96a8; }
+  .dcard .mini { height:5px; border-radius:3px; background:#1d2740; margin-top:10px; overflow:hidden; }
+  .dcard .mini i { display:block; height:100%; background:var(--c); }
+
+  /* ===== مودال عکس ===== */
+  #imgModal { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:400; display:none;
+    align-items:center; justify-content:center; cursor:pointer; }
+  #imgModal img { max-width:92vw; max-height:92vh; border-radius:10px; }
+
+  /* ===== ابزار ادمین ===== */
+  #adminBar { position:absolute; top:12px; left:12px; display:none; flex-direction:column; gap:4px;
+    background:rgba(14,20,36,.92); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:8px; z-index:20; width:52px; }
+  #adminBar.show { display:flex; }
+  .tool { width:36px; height:36px; border-radius:10px; border:none; background:transparent; color:#c6cedb;
+    cursor:pointer; font-size:17px; transition:.15s; position:relative; }
+  .tool:hover { background:rgba(255,255,255,.1); }
+  .tool.on { background:#f4a833; box-shadow:0 0 10px rgba(244,168,51,.5); }
+  .tsep { height:1px; background:rgba(255,255,255,.1); margin:3px 4px; }
+  .tool .tip { position:absolute; right:46px; top:50%; transform:translateY(-50%); background:#0f1626;
+    border:1px solid rgba(255,255,255,.15); padding:4px 10px; border-radius:8px; font-size:10.5px; white-space:nowrap;
+    opacity:0; pointer-events:none; transition:.15s; color:#e8ecf1; }
+  .tool:hover .tip { opacity:1; right:44px; }
+  #paintColors button { width:26px; height:26px; border-radius:7px; border:2px solid transparent; cursor:pointer; }
+  #paintColors button.on { border-color:#fff; }
+  #paintFinish button { border:1px solid rgba(255,255,255,.15); background:transparent; color:#a8b3c4;
+    border-radius:8px; padding:5px; font-size:10.5px; cursor:pointer; font-family:Vazirmatn; }
+  #paintFinish button.on { background:#f4a833; color:#1a1408; font-weight:700; border-color:#f4a833; }
+  #adminBadge { position:absolute; top:66px; left:16px; background:rgba(224,82,82,.2); color:#ff8a8a; border:1px solid rgba(224,82,82,.4);
+    padding:4px 12px; border-radius:14px; font-size:10.5px; z-index:20; display:none; }
+  #adminBadge.show { display:block; }
+  #lockBtn { position:absolute; top:64px; left:12px; width:40px; height:40px; border-radius:12px; border:1px solid rgba(255,255,255,.15);
+    background:rgba(14,20,36,.9); color:#a8b3c4; cursor:pointer; font-size:16px; z-index:19; }
+  #lockBtn:hover { color:#fff; border-color:#f4a833; }
+
+  /* مودال فرم مارکر */
+  #markModal { position:fixed; inset:0; background:rgba(5,8,15,.75); backdrop-filter:blur(5px); z-index:350;
+    display:none; align-items:center; justify-content:center; }
+  #markModal .mbox { width:min(430px, 92vw); background:#141b2e; border:1px solid rgba(255,255,255,.13);
+    border-radius:16px; padding:20px; max-height:90vh; overflow-y:auto; }
+  #markModal h3 { font-size:14px; margin-bottom:14px; }
+  #markModal .fgroup { margin-bottom:10px; }
+  #markModal .mimg { width:100%; height:130px; object-fit:cover; border-radius:10px; margin-top:6px; display:none; }
+  #measureLabel { position:absolute; display:none; background:#3a86ff; color:#fff; font-size:11px; font-weight:700;
+    padding:3px 10px; border-radius:10px; pointer-events:none; z-index:15; transform:translate(-50%,-120%); }
+
+  #loginModal { position:fixed; inset:0; background:rgba(5,8,15,.8); backdrop-filter:blur(5px); z-index:380;
+    display:none; align-items:center; justify-content:center; }
+  #loginModal .mbox { width:300px; background:#141b2e; border:1px solid rgba(255,255,255,.13); border-radius:16px; padding:22px; }
+  #loginModal h3 { font-size:14px; margin-bottom:12px; text-align:center; }
+
+  #loading { position:fixed; inset:0; background:#0a0f1c; display:flex; align-items:center; justify-content:center;
+    z-index:500; flex-direction:column; gap:14px; }
+  #loading .sp { width:38px; height:38px; border:3px solid #2c3a55; border-top-color:#f4a833; border-radius:50%; animation:spin 1s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .toast { position:fixed; bottom:24px; right:50%; transform:translateX(50%); background:#2fbf71; color:#fff;
+    padding:11px 26px; border-radius:12px; font-size:13px; z-index:600; opacity:0; transition:.4s; pointer-events:none; }
+  .toast.show { opacity:1; bottom:44px; }
+
+  /* ===== ویزارد راه‌اندازی پروژه ===== */
+  #setupModal { position:fixed; inset:0; background:#0a0f1c; z-index:700; display:none; overflow-y:auto; padding:30px 16px; }
+  #setupModal.show { display:block; }
+  #setupModal .sbox { max-width:640px; margin:0 auto; background:#141b2e; border:1px solid rgba(255,255,255,.12); border-radius:18px; padding:26px; }
+  #setupModal h2 { font-size:17px; color:#fff; margin-bottom:4px; }
+  #setupModal .ssub { font-size:11.5px; color:#8b96a8; margin-bottom:18px; line-height:1.9; }
+  .swiz { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .swiz .fgroup { min-width:0; }
+  .swiz select, .swiz input { width:100%; background:#0f1626; border:1px solid rgba(255,255,255,.12); border-radius:9px; padding:10px 12px; color:#e8ecf1; font-size:13px; outline:none; }
+  .swiz select:focus, .swiz input:focus { border-color:#f4a833; }
+  .stCommon { grid-column:1 / -1; display:flex; gap:8px; flex-wrap:wrap; }
+  .stCommon label { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+    border-radius:9px; padding:8px 12px; font-size:12px; cursor:pointer; }
+  .stCommon input { width:auto; }
+  #setupModal .sfoot { margin-top:18px; display:flex; gap:10px; }
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="sp"></div><div style="font-size:13px;color:#8b96a8" id="loadMsg">در حال بارگذاری مدل واقعی…</div></div>
+
+<nav id="navbar">
+  <div class="logo">🏗️ پروژه <span>۴ ویلا</span> لواسان</div>
+  <button class="navbtn active" data-view="model">🗺️ مدل سه‌بعدی</button>
+  <button class="navbtn" data-view="dash">📊 داشبورد</button>
+  <button class="navbtn" data-view="gantt">📆 برنامه زمانبندی</button>
+  <button class="navbtn" data-view="estimate">📐 متره و برآورد</button>
+  <button class="navbtn" data-view="report">📝 گزارش روزانه</button>
+  <button class="navbtn" data-view="ledger">💰 دفتر مالی</button>
+  <button class="navbtn" data-view="inventory">📦 انبار مصالح</button>
+  <button class="navbtn" data-view="contractors">👷 پیمانکاران</button>
+  <button class="navbtn" data-view="gallery">🖼️ گالری</button>
+  <button class="navbtn" data-view="reminders">⏰ یادآورها</button>
+  <button class="navbtn" data-view="comments">💬 نظرات کارفرما و معمار</button>
+  <button class="navbtn" id="viewerBtn" style="margin-right:6px" title="حالت دیدن کارفرما">👁️ کارفرما</button>
+  <div class="date" id="todayDate"></div>
+</nav>
+
+<!-- ============ نمای مدل سه‌بعدی ============ -->
+<div class="view active" id="viewModel">
+  <div id="scene3d"></div>
+  <div id="frontBar">
+    <div id="frontList"></div>
+  </div>
+  <div id="hint3d">درگ = چرخش • اسکرول = زوم • کلیک روی ویلای ۳بعدی = پلان طبقات • کلیک روی پین = جزئیات</div>
+</div>
+
+<!-- ============ داشبورد ============ -->
+<div class="view" id="viewDash">
+  <div class="dgrid" id="dashGrid"></div>
+</div>
+
+<!-- ============ گزارش روزانه ============ -->
+<div class="view" id="viewReport">
+  <div class="card">
+    <h2>📝 ثبت گزارش روزانه کارگاه</h2>
+    <div class="frow">
+      <div class="fgroup"><label>تاریخ</label><input type="text" id="rDate" placeholder="۱۴۰۴/۰۷/۱۱"></div>
+      <div class="fgroup"><label>جبهه کاری</label><select id="rFront"></select></div>
+      <div class="fgroup"><label>آب و هوا</label>
+        <select id="rWeather"><option>☀️ آفتابی</option><option>⛅ نیمه ابری</option><option>🌧️ بارانی</option><option>❄️ سرد</option></select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fgroup"><label>جبهه‌های فعال امروز (چندگزینه‌ای)</label><div class="chips" id="rChips"></div></div>
+      <div class="fgroup" style="max-width:170px"><label>تعداد نیروی انسانی</label>
+        <div class="manpower"><button id="mpMinus">−</button><span id="mpNum">6</span><button id="mpPlus">+</button></div>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fgroup"><label>کارهای انجام‌شده امروز</label><textarea id="rDone" placeholder="مثلاً: نصب ۱۲ متر مربع سنگ نما در جبهه جنوبی ویلا ۱..."></textarea></div>
+    </div>
+    <div class="frow">
+      <div class="fgroup"><label>کارهای در دست انجام / برنامه فردا</label><textarea id="rNext" placeholder="..."></textarea></div>
+    </div>
+    <div class="frow">
+      <div class="fgroup"><label>موانع و مشکلات (اختیاری)</label><input type="text" id="rIssue" placeholder="مثلاً: کمبود سیمان، تاخیر بارگیری..."></div>
+    </div>
+
+    <!-- نیروی انسانی -->
+    <div class="rsec">
+      <div class="rsecHead">👷 نیروی انسانی <button class="addRow btn btn-s" data-sec="man">➕ افزودن گروه</button></div>
+      <div id="secMan"></div>
+      <div class="rsecTotal" id="manTotal">جمع نیروی امروز: ۰ نفر</div>
+    </div>
+
+    <!-- خریدها -->
+    <div class="rsec">
+      <div class="rsecHead">🛒 خریدهای امروز <button class="addRow btn btn-s" data-sec="buy">➕ افزودن خرید</button></div>
+      <div id="secBuy"></div>
+      <div class="rsecTotal" id="buyTotal">جمع خریدها: ۰</div>
+    </div>
+
+    <!-- مصالح ورودی -->
+    <div class="rsec">
+      <div class="rsecHead">🧱 مصالح ورودی به کارگاه <button class="addRow btn btn-s" data-sec="mat">➕ افزودن مصالح</button></div>
+      <div id="secMat"></div>
+    </div>
+
+    <!-- مصرف / تحویل مصالح -->
+    <div class="rsec">
+      <div class="rsecHead">📤 مصرف و تحویل مصالح به گروه‌ها <button class="addRow btn btn-s" data-sec="use">➕ افزودن</button></div>
+      <div id="secUse"></div>
+    </div>
+
+    <!-- تنخواه -->
+    <div class="rsec">
+      <div class="rsecHead">💰 پرداختی‌ها از تنخواه <button class="addRow btn btn-s" data-sec="cash">➕ افزودن پرداخت</button></div>
+      <div id="secCash"></div>
+      <div class="rsecTotal" id="cashTotal">جمع تنخواه امروز: ۰ ریال</div>
+    </div>
+
+    <!-- ماشین‌آلات -->
+    <div class="rsec">
+      <div class="rsecHead">🚜 ماشین‌آلات و تجهیزات <button class="addRow btn btn-s" data-sec="mach">➕ افزودن</button></div>
+      <div id="secMach"></div>
+    </div>
+
+    <!-- ایمنی -->
+    <div class="rsec">
+      <div class="rsecHead">🦺 ایمنی و حوادث</div>
+      <div class="frow">
+        <div class="fgroup" style="max-width:220px"><label>وضعیت ایمنی امروز</label>
+          <select id="rSafety">
+            <option>✅ بدون حادثه</option>
+            <option>⚠️ ریسک / Near Miss</option>
+            <option>🩹 حادثه خفیف (خفیف درمان شد)</option>
+            <option>🚨 حادثه — گزارش جدا</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>توضیحات ایمنی / بازدید TOC</label><input type="text" id="rSafetyNote" placeholder="مثلاً: کلاه ایمنی گروه آچارکاری ناقص بود، تذکر داده شد"></div>
+      </div>
+    </div>
+
+    <!-- درخواست از دفتر -->
+    <div class="rsec">
+      <div class="rsecHead">📞 درخواست‌ها و پیگیری از دفتر مرکزی</div>
+      <div class="fgroup"><textarea id="rOffice" style="min-height:50px" placeholder="مثلاً: تاییدیه نقشه تاسیسات ویلا ۲ — وجه تنخواه هفته بعد — نقشه سقف شیبدار ویلا ۱"></textarea></div>
+    </div>
+
+    <div class="frow">
+      <div class="fgroup"><label>عکس‌های امروز</label>
+        <div class="photoDrop" id="rDrop">📷 برای افزودن عکس کلیک کنید (از دوربین موبایل یا فایل)</div>
+        <input type="file" id="rFile" accept="image/*" multiple hidden>
+        <div class="thumbs" id="rThumbs"></div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:6px">
+      <button class="btn btn-p" id="rSave">💾 ذخیره پیش‌نویس</button>
+      <button class="btn btn-g" id="rSend">📤 تایید و ارسال به کارفرما</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🗂️ گزارش‌های قبلی</h2>
+    <div class="frow">
+      <div class="fgroup"><label>🔍 جستجو در همه گزارش‌ها (متن، تاریخ، اسم، عکس‌ها...)</label>
+        <input type="text" id="repSearch" placeholder="مثلاً: بتن‌ریزی یا ۰۲/۱۱ یا رضایی"></div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px 14px;">
+      <img id="logoPreview" style="width:52px; height:52px; object-fit:contain; border-radius:8px; background:#fff; padding:4px; display:none;">
+      <div style="flex:1">
+        <div style="font-size:12.5px; font-weight:700">🏷️ لوگوی شرکت</div>
+        <div style="font-size:10.5px; color:#8b96a8">در سربرگ گزارش‌های چاپی نمایش داده می‌شود</div>
+      </div>
+      <button class="btn btn-s" id="logoBtn" style="font-size:11px; padding:6px 14px">انتخاب لوگو</button>
+      <button class="btn btn-s" id="logoDel" style="font-size:11px; padding:6px 10px">✕</button>
+    </div>
+    <input type="file" id="logoFile" accept="image/*" hidden>
+    <div id="rList"></div>
+  </div>
+</div>
+
+<!-- ============ برنامه زمانبندی (WBS) ============ -->
+<div class="view" id="viewGantt">
+  <div class="card">
+    <h2>📆 برنامه زمانبندی تفصیلی — روی هر آیتم کلیک کن تا انجام‌شده علامت بخورد</h2>
+    <div class="chips" id="wbsTabs" style="margin-bottom:14px"></div>
+    <div class="rsum" id="wbsSummary"></div>
+    <div id="wbsBody"></div>
+  </div>
+</div>
+
+<!-- ============ دفتر مالی ============ -->
+<div class="view" id="viewLedger">
+  <div class="card">
+    <h2>💰 دفتر تنخواه و خریدهای کارگاه</h2>
+    <div class="frow">
+      <div class="fgroup" style="max-width:260px"><label>جستجو (شرح، گیرنده، تاریخ...)</label>
+        <input type="text" id="lgSearch" placeholder="مثلاً: سیمان یا ۰۷/۰۳ یا رضایی"></div>
+      <div class="fgroup" style="max-width:200px"><label>نوع</label>
+        <select id="lgType"><option value="all">همه</option><option value="خرید">خریدها</option><option value="تنخواه">تنخواه</option></select></div>
+    </div>
+    <div class="rsum" id="lgSummary"></div>
+    <div id="lgTable"></div>
+  </div>
+</div>
+
+<!-- ============ متره و برآورد ============ -->
+<div class="view" id="viewEstimate">
+  <div class="card">
+    <h2>📐 متره و برآورد — مقادیر را وارد کن، مبالغ خودکار محاسبه می‌شود</h2>
+    <div class="chips" id="estTabs" style="margin-bottom:14px"></div>
+    <div class="rsum" id="estSummary"></div>
+    <div id="estBody"></div>
+    <div style="display:flex; gap:10px; margin-top:14px">
+      <button class="btn btn-p" onclick="window.__estPrint()">🖨️ چاپ برآورد این ویلا</button>
+      <button class="btn btn-s" id="estReset">♻️ پاک کردن متره این ویلا</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ نظرات ============ -->
+<div class="view" id="viewComments">
+  <div class="card">
+    <h2>💬 افزودن نظر</h2>
+    <div class="frow">
+      <div class="fgroup" style="max-width:190px"><label>نقش</label>
+        <select id="cRole"><option>کارفرما</option><option>معمار ناظر</option><option>سرپرست کارگاه</option></select>
+      </div>
+      <div class="fgroup" style="max-width:200px"><label>جبهه مرتبط</label><select id="cFront"></select></div>
+      <div class="fgroup"><label>نفر</label><input id="cName" placeholder="نام (اختیاری)"></div>
+    </div>
+    <div class="frow">
+      <div class="fgroup"><label>متن نظر / دستور کار</label><textarea id="cText" placeholder="مثلاً: رنگ نما را به کرم روشن تغییر دهید."></textarea></div>
+    </div>
+    <button class="btn btn-p" id="cAdd">➕ ثبت نظر</button>
+  </div>
+  <div class="card">
+    <h2>📋 فهرست نظرات</h2>
+    <div class="frow" style="margin-bottom:14px">
+      <div class="chips" id="cFilter">
+        <button class="chip on" data-f="all" style="--c:#3a86ff">همه</button>
+        <button class="chip" data-f="کارفرما" style="--c:#e05252">کارفرما</button>
+        <button class="chip" data-f="معمار ناظر" style="--c:#3a86ff">معمار ناظر</button>
+        <button class="chip" data-f="سرپرست کارگاه" style="--c:#f4a833">سرپرست</button>
+        <button class="chip" data-f="open" style="--c:#2fbf71">باز</button>
+      </div>
+    </div>
+    <div id="cList"></div>
+  </div>
+</div>
+
+<!-- ============ انبار مصالح ============ -->
+<div class="view" id="viewInventory">
+  <div class="card">
+    <h2>📦 انبار مصالح کارگاه</h2>
+    <div class="drow">
+      <input id="invItem" placeholder="نام مصالح" style="flex:1.3">
+      <input id="invUnit" placeholder="واحد (کیسه، متر...)" style="flex:.8">
+      <input id="invQty" placeholder="موجودی" class="num">
+      <input id="invMin" placeholder="حد هشدار" class="num">
+      <button class="btn btn-p" id="invAdd" style="padding:7px 16px;font-size:12px">➕</button>
+    </div>
+    <div id="invList"></div>
+  </div>
+</div>
+
+<!-- ============ پیمانکاران ============ -->
+<div class="view" id="viewContractors">
+  <div class="card">
+    <h2>👥 گروه‌های پیمانکار</h2>
+    <div class="drow">
+      <input id="ctName" placeholder="نام گروه / شرکت" style="flex:1.2">
+      <input id="ctWork" placeholder="رشته کاری" style="flex:1">
+      <input id="ctPhone" placeholder="تلفن سرپرست" style="flex:.9">
+      <input id="ctAmount" placeholder="مبلغ قرارداد (ریال)" class="money">
+      <button class="btn btn-p" id="ctAdd" style="padding:7px 16px;font-size:12px">➕</button>
+    </div>
+    <div class="dgrid" id="ctGrid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"></div>
+  </div>
+</div>
+
+<!-- ============ گالری ============ -->
+<div class="view" id="viewGallery">
+  <div class="card">
+    <h2>🖼️ گالری تصاویر پروژه</h2>
+    <div class="frow">
+      <div class="fgroup"><input type="text" id="galSearch" placeholder="🔍 جستجو: مثلاً بتن‌ریزی یا ۰۲/۱۱"></div>
+    </div>
+    <div id="galGrid"></div>
+  </div>
+</div>
+
+<!-- ============ یادآورها ============ -->
+<div class="view" id="viewReminders">
+  <div class="card">
+    <h2>⏰ یادآورها و هشدارها</h2>
+    <div id="autoReminders"></div>
+    <div class="drow" style="margin:10px 0">
+      <input id="remText" placeholder="یادآور جدید (مثلاً: سرسید چک آقای رضایی ۱۵ آبان)" style="flex:1">
+      <input id="remDate" placeholder="تاریخ (۱۴۰۴/۰۸/۱۵)" style="flex:.7">
+      <button class="btn btn-p" id="remAdd" style="padding:7px 16px;font-size:12px">➕</button>
+    </div>
+    <div id="remList"></div>
+  </div>
+</div>
+
+<!-- مودال پلان -->
+<div id="planModal">
+  <div class="box">
+    <div class="phead">
+      <h3 id="planTitle"></h3>
+      <div class="ptabs" id="planTabs"></div>
+      <button id="pclose2">✕</button>
+    </div>
+    <div id="planBody"></div>
+  </div>
+</div>
+
+<!-- پاپ‌آپ پین -->
+<div id="popup">
+  <button id="pclose">✕</button>
+  <img class="pimg" id="pimg" src="" alt="">
+  <div class="pbody">
+    <h3 id="ptitle"></h3>
+    <p id="pdesc"></p>
+    <span class="ptag" id="ptag"></span>
+  </div>
+</div>
+
+<div id="imgModal"><img id="imgBig" src=""></div>
+
+<!-- ویزارد راه‌اندازی پروژه -->
+<div id="setupModal">
+  <div class="sbox">
+    <h2>⚙️ راه‌اندازی پروژه</h2>
+    <div class="ssub">این اطلاعات ساختار کل سیستم را تعیین می‌کند: جبهه‌های کاری، برنامه زمانبندی، متره و برآورد و داشبورد بر همین اساس ساخته می‌شوند.</div>
+    <div class="swiz">
+      <div class="fgroup" style="grid-column:1/-1"><label style="font-size:11px;color:#8b96a8">نام پروژه</label><input id="stName" placeholder="مثلاً: پروژه ۴ ویلا لواسان"></div>
+      <div class="fgroup"><label style="font-size:11px;color:#8b96a8">نوع پروژه</label>
+        <select id="stType">
+          <option value="villa">ویلا (شخصی / مجموعه ویلا)</option>
+          <option value="complex">مجتمع مسکونی</option>
+          <option value="commercial">تجاری - اداری</option>
+        </select></div>
+      <div class="fgroup"><label style="font-size:11px;color:#8b96a8">تعداد واحدها / ویلاهای این پیمان</label><input id="stUnits" type="number" min="1" max="50" value="4"></div>
+      <div class="fgroup"><label style="font-size:11px;color:#8b96a8">نوع سازه</label>
+        <select id="stStruct">
+          <option value="concrete">بتنی</option>
+          <option value="steel">فولادی</option>
+          <option value="lsf">قاب سبک (LSF)</option>
+        </select></div>
+      <div class="fgroup"><label style="font-size:11px;color:#8b96a8">تعداد طبقات هر واحد</label><input id="stFloors" type="number" min="1" max="20" value="2"></div>
+      <div class="fgroup"><label style="font-size:11px;color:#8b96a8">متراژ زمین (مترمربع)</label><input id="stLand" type="number" min="0" placeholder="مثلاً ۱۲۰۰"></div>
+      <div class="fgroup"><label style="font-size:11px;color:#8b96a8">زیربنای کل (مترمربع)</label><input id="stBuilt" type="number" min="0" placeholder="مثلاً ۹۶۰"></div>
+      <div class="stCommon">
+        <label><input type="checkbox" id="stcLand" checked> فضای سبز و محوطه</label>
+        <label><input type="checkbox" id="stcWall" checked> دیوار محیطی و درب</label>
+        <label><input type="checkbox" id="stcMep"> تاسیسات مرکزی مشترک</label>
+        <label><input type="checkbox" id="stcPool"> استخر و رفاهی</label>
+      </div>
+    </div>
+    <div class="sfoot">
+      <button class="btn btn-p" id="setupSave" style="flex:1">✅ شروع پروژه</button>
+      <button class="btn btn-s" id="setupCancel" style="display:none">لغو</button>
+    </div>
+    <div class="ssub" style="margin:12px 0 0">⚠️ اگر تعداد واحدها یا نوع سازه را تغییر دهید، برنامه زمانبندی و برآورد دوباره ساخته می‌شوند (تیک‌های مشابه حفظ می‌شوند).</div>
+  </div>
+</div>
+<button id="cfgBtn" title="تنظیمات پروژه" style="position:fixed; top:8px; left:130px; z-index:101; width:34px; height:34px; border-radius:9px; border:1px solid rgba(255,255,255,.12); background:rgba(14,20,36,.9); color:#a8b3c4; cursor:pointer; font-size:15px">⚙️</button>
+<div class="toast" id="toast"></div>
+
+<!-- قفل ادمین -->
+<button id="lockBtn" title="ورود ادمین">🔓</button>
+<div id="adminBadge">🛠️ حالت ادمین فعال است</div>
+<div id="adminBar">
+  <button class="tool" data-tool="select">🖱️<span class="tip">انتخاب / مشاهده</span></button>
+  <div class="tsep"></div>
+  <button class="tool" data-tool="pin">📍<span class="tip">پین وضعیت</span></button>
+  <button class="tool" data-tool="note">📝<span class="tip">یادداشت</span></button>
+  <button class="tool" data-tool="warn">⚠️<span class="tip">هشدار / نقص</span></button>
+  <button class="tool" data-tool="check">✅<span class="tip">تایید کیفیت</span></button>
+  <button class="tool" data-tool="spot">🎯<span class="tip">نشانگر چشمک‌زن</span></button>
+  <div class="tsep"></div>
+  <button class="tool" data-tool="paint">🎨<span class="tip">رنگ‌آمیزی / جنس ظاهری</span></button>
+  <button class="tool" data-tool="explode">💥<span class="tip">نمایش انفجاری طبقات</span></button>
+  <button class="tool" data-tool="measure">📏<span class="tip">اندازه‌گیری فاصله</span></button>
+  <button class="tool" data-tool="clip">✂️<span class="tip">برش طبقات</span></button>
+  <button class="tool" data-tool="isolate">👁️<span class="tip">ایزوله کردن (کلیک روی بخش)</span></button>
+  <div class="tsep"></div>
+  <button class="tool" id="updBtn">🔄<span class="tip">آپدیت مدل سه‌بعدی (فایل GLB جدید)</span></button>
+  <button class="tool" id="expBtn">⬇️<span class="tip">خروجی JSON</span></button>
+  <button class="tool" id="impBtn">⬆️<span class="tip">ورودی JSON</span></button>
+</div>
+<input type="file" id="jsonFile" accept=".json" hidden>
+<input type="file" id="glbFile" accept=".glb" hidden>
+<div id="paintPalette" style="position:absolute; top:12px; left:78px; z-index:25; display:none;
+  background:rgba(14,20,36,.95); border:1px solid rgba(255,255,255,.14); border-radius:14px; padding:12px; width:210px;">
+  <div style="font-size:11px;color:#8b96a8;margin-bottom:8px">🎨 رنگ</div>
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px" id="paintColors"></div>
+  <div style="font-size:11px;color:#8b96a8;margin:10px 0 6px">✨ جنس</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px" id="paintFinish">
+    <button class="fin on" data-f="matte">مات</button>
+    <button class="fin" data-f="semi">نیم‌براق</button>
+    <button class="fin" data-f="glossy">براق</button>
+    <button class="fin" data-f="glass">شیشه‌ای</button>
+  </div>
+  <button id="paintReset" style="width:100%;margin-top:10px;border:none;background:rgba(224,82,82,.2);color:#ff8a8a;border-radius:8px;padding:6px;cursor:pointer;font-size:11px;font-family:Vazirmatn">♻️ بازگشت همه رنگ‌ها به حالت اول</button>
+</div>
+<div id="explodeWrap" style="position:absolute; bottom:60px; left:16px; z-index:20; display:none; align-items:center; gap:10px;
+  background:rgba(14,20,36,.92); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:10px 14px;">
+  <span style="font-size:11px;color:#a8b3c4">شدت انفجار</span>
+  <input type="range" id="explodeSlider" min="0" max="100" value="0" style="width:180px; accent-color:#e05252">
+  <button id="explodeOff" style="border:none;background:rgba(255,255,255,.1);color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:11px">بستن</button>
+</div>
+<div id="clipSliderWrap" style="position:absolute; bottom:60px; left:16px; z-index:20; display:none; align-items:center; gap:10px;
+  background:rgba(14,20,36,.92); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:10px 14px;">
+  <span style="font-size:11px;color:#a8b3c4">ارتفاع برش</span>
+  <input type="range" id="clipSlider" min="0" max="100" value="100" style="width:180px; accent-color:#f4a833">
+  <span id="clipVal" style="font-size:11px;color:#f4a833;min-width:40px">—</span>
+  <button id="clipOff" style="border:none;background:rgba(255,255,255,.1);color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:11px">خاموش</button>
+</div>
+<div id="measureLabel"></div>
+
+<!-- مودال ورود ادمین -->
+<div id="loginModal">
+  <div class="mbox">
+    <h3>🔐 ورود ادمین</h3>
+    <div class="fgroup"><input type="password" id="adminPass" placeholder="رمز عبور" style="width:100%;background:#0f1626;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;outline:none"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-p" id="loginOk" style="flex:1">ورود</button>
+      <button class="btn btn-s" id="loginCancel">لغو</button>
+    </div>
+    <div style="font-size:10px;color:#5d6a80;margin-top:10px;text-align:center">رمز پیش‌فرض: 1234 — بعداً قابل تغییر است</div>
+  </div>
+</div>
+
+<!-- مودال فرم مارکر -->
+<div id="markModal">
+  <div class="mbox">
+    <h3 id="mmTitle">📍 افزودن پین</h3>
+    <div class="fgroup"><label style="font-size:11px;color:#8b96a8">عنوان</label>
+      <input id="mmTitleIn" style="width:100%;background:#0f1626;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:9px 12px;color:#fff;outline:none"></div>
+    <div class="fgroup"><label style="font-size:11px;color:#8b96a8">توضیح</label>
+      <textarea id="mmDesc" style="width:100%;min-height:60px;background:#0f1626;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:9px 12px;color:#fff;outline:none;resize:vertical;font-family:Vazirmatn"></textarea></div>
+    <div class="frow">
+      <div class="fgroup"><label style="font-size:11px;color:#8b96a8">جبهه</label><select id="mmFront" style="width:100%;background:#0f1626;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:9px 12px;color:#fff;outline:none"></select></div>
+      <div class="fgroup" id="mmStatusWrap"><label style="font-size:11px;color:#8b96a8">وضعیت</label>
+        <select id="mmStatus" style="width:100%;background:#0f1626;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:9px 12px;color:#fff;outline:none">
+          <option value="done">🟢 انجام شده</option><option value="doing">🟡 در حال انجام</option><option value="todo">🔴 باقی‌مانده</option>
+        </select></div>
+    </div>
+    <div class="fgroup"><label style="font-size:11px;color:#8b96a8">عکس</label>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-s" id="mmShot" style="font-size:11px;padding:6px 12px">📸 اسکرین‌شات مدل</button>
+        <button class="btn btn-s" id="mmFileBtn" style="font-size:11px;padding:6px 12px">📁 از فایل</button>
+      </div>
+      <input type="file" id="mmFile" accept="image/*" hidden>
+      <img class="mimg" id="mmImg">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn btn-p" id="mmSave" style="flex:1">💾 ذخیره</button>
+      <button class="btn btn-s" id="mmCancel">لغو</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var sm = document.getElementById('setupModal');
+  if(!localStorage.getItem('lv4h_projectCfg')){ sm.classList.add('show'); }
+  var ld = document.getElementById('loading');
+  if(ld && !localStorage.getItem('lv4h_projectCfg')) ld.style.display = 'none';
+  window.__openSetup = function(prefill){
+    var cfg = JSON.parse(localStorage.getItem('lv4h_projectCfg') || 'null');
+    sm.classList.add('show');
+    document.getElementById('setupCancel').style.display = prefill ? 'inline-block' : 'none';
+    if(cfg){
+      document.getElementById('stName').value = cfg.name||'';
+      document.getElementById('stType').value = cfg.type||'villa';
+      document.getElementById('stUnits').value = cfg.units||1;
+      document.getElementById('stStruct').value = cfg.struct||'concrete';
+      document.getElementById('stFloors').value = cfg.floors||1;
+      document.getElementById('stLand').value = cfg.landArea||'';
+      document.getElementById('stBuilt').value = cfg.builtArea||'';
+      document.getElementById('stcLand').checked = (cfg.common||[]).indexOf('land')>=0;
+      document.getElementById('stcWall').checked = (cfg.common||[]).indexOf('wall')>=0;
+      document.getElementById('stcMep').checked = (cfg.common||[]).indexOf('mep')>=0;
+      document.getElementById('stcPool').checked = (cfg.common||[]).indexOf('pool')>=0;
+    }
+  };
+  document.getElementById('cfgBtn').onclick = function(){ window.__openSetup(true); };
+  document.getElementById('setupCancel').onclick = function(){ sm.classList.remove('show'); };
+  document.getElementById('setupSave').onclick = function(){
+    var type = document.getElementById('stType').value;
+    var common = [];
+    if(document.getElementById('stcLand').checked) common.push('land');
+    if(document.getElementById('stcWall').checked) common.push('wall');
+    if(document.getElementById('stcMep').checked) common.push('mep');
+    if(document.getElementById('stcPool').checked) common.push('pool');
+    var next = {
+      name: document.getElementById('stName').value.trim() || 'پروژه بی‌نام',
+      type: type,
+      unitLabel: type==='complex' ? 'واحد' : type==='commercial' ? 'واحد تجاری' : 'ویلا',
+      units: Math.max(1, +document.getElementById('stUnits').value||1),
+      struct: document.getElementById('stStruct').value,
+      floors: Math.max(1, +document.getElementById('stFloors').value||1),
+      landArea: +document.getElementById('stLand').value||0,
+      builtArea: +document.getElementById('stBuilt').value||0,
+      common: common,
+    };
+    var prev = JSON.parse(localStorage.getItem('lv4h_projectCfg') || 'null');
+    if(prev && (prev.units!==next.units || prev.struct!==next.struct)){
+      localStorage.removeItem('lv4h_wbs');
+      localStorage.removeItem('lv4h_meters');
+      if(prev.units!==next.units) localStorage.removeItem('lv4h_frontData');
+    }
+    localStorage.setItem('lv4h_projectCfg', JSON.stringify(next));
+    location.reload();
+  };
+})();
+</script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+/* ================= داده‌ها ================= */
+const S = k => JSON.parse(localStorage.getItem('lv4h_'+k) || 'null');
+const save = (k,v) => localStorage.setItem('lv4h_'+k, JSON.stringify(v));
+
+const STATUS = {
+  done:  {label:'انجام شده',   css:'#2fbf71', bg:'rgba(47,191,113,.15)'},
+  doing: {label:'در حال انجام', css:'#f4a833', bg:'rgba(244,168,51,.15)'},
+  todo:  {label:'باقی‌مانده',   css:'#e05252', bg:'rgba(224,82,82,.15)'},
+};
+
+// جبهه‌های کاری: ۴ ویلا + محوطه
+const CFG = S('projectCfg');
+if(!CFG){
+  document.getElementById('setupModal').classList.add('show');
+  document.getElementById('loading').style.display = 'none';
+  throw new Error('SETUP_REQUIRED');
+}
+
+const COMMON_DEFS = {
+  land: {id:'land', type:'site', name:'فضای سبز و محوطه', color:0x27ae60, css:'#27ae60', progress:0, tasks:[{t:'کاشت درختان',s:'doing',d:'—'},{t:'چمن‌کاری',s:'todo',d:'—'}], pins:[]},
+  wall: {id:'wall', type:'site', name:'دیوار محیطی و درب ورودی', color:0x9b59b6, css:'#9b59b6', progress:0, tasks:[{t:'دیوار محیطی',s:'doing',d:'—'},{t:'درب ورودی',s:'todo',d:'—'}], pins:[]},
+  mep:  {id:'mep', type:'site', name:'تاسیسات مرکزی مشترک', color:0x00b8d4, css:'#00b8d4', progress:0, tasks:[{t:'موتورخانه و انشعابات',s:'todo',d:'—'}], pins:[]},
+  pool: {id:'pool', type:'site', name:'استخر و فضاهای رفاهی', color:0xff6d00, css:'#ff6d00', progress:0, tasks:[{t:'استخر و جکوزی',s:'todo',d:'—'}], pins:[]},
+};
+function buildFronts(){
+  const pal = [0xf4a833,0x3a86ff,0x2fbf71,0xe05252,0x9b59b6,0x00b8d4,0xff6d00,0x64dd17];
+  const fronts = [];
+  for(let i=1; i<=CFG.units; i++){
+    const c = pal[(i-1)%pal.length];
+    fronts.push({id:'v'+i, type:'villa', name:CFG.unitLabel+' '+i, color:c, css:'#'+c.toString(16).padStart(6,'0'), progress:0,
+      plans:[{name:'همکف', rooms:[{n:'فضای اصلی',x:6,y:6,w:30,h:16},{n:'تاسیسات',x:6,y:22,w:12,h:5}]}],
+      tasks:[{t:'سازه',s:'todo',d:'—'},{t:'تاسیسات',s:'todo',d:'—'},{t:'نازک‌کاری',s:'todo',d:'—'},{t:'نما و تحویل',s:'todo',d:'—'}], pins:[]});
+  }
+  (CFG.common||[]).forEach(id=>fronts.push(JSON.parse(JSON.stringify(COMMON_DEFS[id]))));
+  const fd = S('frontData')||{};
+  fronts.forEach(f=>{ if(fd[f.id]) Object.assign(f, fd[f.id]); else fd[f.id] = {tasks:f.tasks, pins:f.pins, progress:f.progress||0}; });
+  save('frontData', fd);
+  return fronts;
+}
+const DATA = { fronts: buildFronts() };
+window.__saveFrontData = ()=>{ const fd=S('frontData')||{}; DATA.fronts.forEach(f=>fd[f.id]={tasks:f.tasks,pins:f.pins,progress:f.progress}); save('frontData',fd); };
+document.querySelector('#navbar .logo').innerHTML = '🏗️ ' + CFG.name + (CFG.builtArea? ' <span style="font-size:10px;color:#8b96a8;font-weight:400">'+CFG.builtArea+' متر زیربنا</span>':'');
+
+/* ================= ذخیره‌سازی ================= */
+let reports = S('reports') || [];
+let comments = S('comments') || [
+  {id:1, role:'کارفرما', name:'', front:'ویلا ۲ — مدرن شیشه‌ای', text:'کرتین‌وال هرچه سریع‌تر بسته شود چون پشت آن کار داخلی گیر است.', date:'۱۴۰۴/۰۷/۰۹', resolved:false},
+  {id:2, role:'معمار ناظر', name:'', front:'دیوار محیطی و درب ورودی', text:'ارتفاع ستون‌های درب ورودی با نقشه ۱۰ سانتی اختلاف دارد؛ قبل از نصب درب اصلاح شود.', date:'۱۴۰۴/۰۷/۰۸', resolved:false},
+];
+
+/* ================= صحنه سه‌بعدی ================= */
+const container = document.getElementById('scene3d');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(48, innerWidth/innerHeight, 0.1, 400);
+camera.position.set(34, 26, 36);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+container.appendChild(renderer.domElement);
+
+// محیط و آسمان
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.background = makeSky();
+scene.fog = new THREE.Fog(0xbcd3e8, 90, 220);
+
+function makeSky(){
+  const c = document.createElement('canvas'); c.width=2; c.height=256;
+  const g = c.getContext('2d');
+  const gr = g.createLinearGradient(0,0,0,256);
+  gr.addColorStop(0, '#3d6ea8'); gr.addColorStop(.45, '#89b8dd'); gr.addColorStop(.75, '#d8e6ef'); gr.addColorStop(1, '#e8dfd0');
+  g.fillStyle = gr; g.fillRect(0,0,2,256);
+  const t = new THREE.CanvasTexture(c);
+  t.mapping = THREE.EquirectangularReflectionMapping;
+  return t;
+}
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.maxPolarAngle = Math.PI/2.12;
+controls.minDistance = 6;
+controls.maxDistance = 150;
+controls.target.set(0, 4, 0);
+
+// نورپردازی
+scene.add(new THREE.HemisphereLight(0xbfd9ff, 0x6a5a44, 0.55));
+const sun = new THREE.DirectionalLight(0xfff0d8, 2.4);
+sun.position.set(38, 52, 24);
+sun.castShadow = true;
+sun.shadow.mapSize.set(4096, 4096);
+sun.shadow.camera.left = -45; sun.shadow.camera.right = 45;
+sun.shadow.camera.top = 45; sun.shadow.camera.bottom = -45;
+sun.shadow.camera.far = 160;
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.02;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x9db8e8, 0.5);
+fill.position.set(-25, 18, -30);
+scene.add(fill);
+
+/* ================= بارگذاری مدل واقعی GLB ================= */
+let realModel = null;
+function loadRealModel(){
+  return new Promise((res, rej)=>{
+    const msg = document.getElementById('loadMsg');
+    const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
+    loader.load('opt1.glb', g=>{
+      g.scene.traverse(o=>{
+        if(o.isMesh){
+          o.castShadow = o.receiveShadow = true;
+          if(o.material && o.material.isMeshStandardMaterial){ o.material.envMapIntensity = .5; }
+          else if(o.material){ o.material.metalness = 0; o.material.roughness = .85; }
+        }
+      });
+      const box = new THREE.Box3().setFromObject(g.scene);
+      const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+      // نرمال‌سازی به ابعاد سایت (~۵۵ متر عرض)
+      const s = 55 / Math.max(size.x, size.z);
+      g.scene.scale.setScalar(s);
+      g.scene.position.set(-center.x*s, -box.min.y*s, -center.z*s);
+      realModel = g.scene;
+      scene.add(realModel);
+      applyPaintMap();
+      res(realModel);
+    }, e=>{
+      if(e.total && e.total>0){ const p = Math.round(e.loaded/e.total*100); msg.textContent = 'در حال بارگذاری مدل واقعی… ' + fa(p) + '٪'; }
+    }, err=>{ msg.textContent = '❌ خطا در بارگذاری opt1.glb — سرور (server.cjs) را اجرا کنید'; console.error(err); rej(err); });
+  });
+}
+
+/* ---------- برچسب جبهه‌ها (موقت — تا کالیبراسیون با مدل واقعی) ---------- */
+function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function makePinTexture(css, hollow){
+  const c = document.createElement('canvas'); c.width=c.height=128;
+  const g = c.getContext('2d');
+  g.beginPath(); g.arc(64,64,hollow?46:36,0,Math.PI*2);
+  if(hollow){ g.strokeStyle=css; g.lineWidth=6; g.stroke(); }
+  else { g.fillStyle=css; g.fill();
+    g.fillStyle='#fff'; g.beginPath(); g.arc(64,64,14,0,Math.PI*2); g.fill(); }
+  return new THREE.CanvasTexture(c);
+}
+const pinGroup = new THREE.Group(); scene.add(pinGroup);
+const pinSprites = [];
+DATA.fronts.forEach(f=>{
+  f.pins.forEach((p,i)=>{
+    const s = STATUS[p.status];
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:makePinTexture(s.css), depthWrite:false}));
+    spr.position.set(p.x,p.y,p.z); spr.scale.set(1.5,1.5,1);
+    spr.userData = {pin:p, front:f};
+    pinGroup.add(spr); pinSprites.push(spr);
+    const ring = new THREE.Sprite(new THREE.SpriteMaterial({map:makePinTexture(s.css,true), transparent:true, opacity:.5, depthWrite:false}));
+    ring.position.copy(spr.position); ring.userData.pulse = f.id+i;
+    pinGroup.add(ring); pinSprites.push(ring);
+  });
+});
+
+/* ---------- انتخاب جبهه ---------- */
+let currentFront = 'v1';
+function focusFront(f){
+  // فعلاً روی پین اول جبهه فوکوس می‌کنیم؛ بعد از کالیبراسیون دقیق می‌شود
+  const p = f.pins[0] || {x:0,y:5,z:0};
+  const target = {tx:p.x, ty:2.5, tz:p.z};
+  const cam = {cx:p.x+8, cy:9, cz:p.z+16};
+  const s0 = {tx:controls.target.x, ty:controls.target.y, tz:controls.target.z, cx:camera.position.x, cy:camera.position.y, cz:camera.position.z};
+  const t0 = performance.now();
+  (function anim(){
+    const k = Math.min((performance.now()-t0)/900, 1), e = 1-Math.pow(1-k,3);
+    controls.target.set(s0.tx+(target.tx-s0.tx)*e, s0.ty+(target.ty-s0.ty)*e, s0.tz+(target.tz-s0.tz)*e);
+    camera.position.set(s0.cx+(cam.cx-s0.cx)*e, s0.cy+(cam.cy-s0.cy)*e, s0.cz+(cam.cz-s0.cz)*e);
+    if(k<1) requestAnimationFrame(anim);
+  })();
+}
+
+/* ---------- UI جبهه‌ها ---------- */
+const frontList = document.getElementById('frontList');
+function renderFronts(){
+  const villas = DATA.fronts.filter(f=>f.type==='villa');
+  const sites = DATA.fronts.filter(f=>f.type==='site');
+  frontList.innerHTML = '<div class="flabel">🏠 ویلاها</div>' +
+    villas.map(frontHTML).join('') +
+    '<div class="flabel" style="margin-top:12px">🌿 سایر جبهه‌ها</div>' +
+    sites.map(frontHTML).join('');
+  frontList.querySelectorAll('.front').forEach(el=>{
+    el.onclick = ()=>{
+      currentFront = el.dataset.id;
+      const f = DATA.fronts.find(x=>x.id===currentFront);
+      renderFronts();
+      if(f.type==='villa') openPlan(f); else focusFront(f);
+    };
+  });
+}
+function frontHTML(f){
+  const done = f.tasks.filter(t=>t.s==='done').length;
+  return `<div class="front ${f.id===currentFront?'sel':''}" data-id="${f.id}" style="--c:${f.css}">
+    <div class="fr"><span class="dot"></span>${f.name}<span class="pct">${f.progress}٪</span></div>
+    <div class="mini"><i style="width:${f.progress}%"></i></div>
+    <div style="font-size:10px;color:#8b96a8;margin-top:5px">${done}/${f.tasks.length} کار انجام شده • کلیک: ${f.type==='villa'?'پلان و فوکوس':'فوکوس'}</div>
+  </div>`;
+}
+renderFronts();
+
+/* ---------- کلیک: پین ---------- */
+const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
+let downPos = null;
+renderer.domElement.addEventListener('pointerdown', e=>downPos=[e.clientX,e.clientY]);
+renderer.domElement.addEventListener('pointerup', e=>{
+  if(!downPos || Math.hypot(e.clientX-downPos[0], e.clientY-downPos[1])>6) return;
+  if(!document.getElementById('viewModel').classList.contains('active')) return;
+  if(handleAdminClick(e)) return;
+  mouse.x = (e.clientX/innerWidth)*2-1;
+  mouse.y = -(e.clientY/innerHeight)*2+1;
+  raycaster.setFromCamera(mouse, camera);
+  const ph = raycaster.intersectObjects(pinSprites.filter(s=>s.userData.pin));
+  if(ph.length) showPinPopup(ph[0].object.userData.pin);
+  else hidePopup();
+});
+
+const popup = document.getElementById('popup');
+function showPinPopup(p){
+  const s = STATUS[p.status];
+  document.getElementById('pimg').src = p.img;
+  document.getElementById('ptitle').textContent = p.title;
+  document.getElementById('pdesc').textContent = p.desc;
+  const tag = document.getElementById('ptag');
+  tag.textContent = s.label; tag.style.color = s.css; tag.style.background = s.bg;
+  popup.style.display = 'block';
+  popup.style.left = Math.max(10,(innerWidth-310)/2)+'px';
+  popup.style.top = Math.max(70, innerHeight*0.24)+'px';
+}
+function hidePopup(){ popup.style.display='none'; }
+document.getElementById('pclose').onclick = hidePopup;
+document.getElementById('imgModal').onclick = ()=>document.getElementById('imgModal').style.display='none';
+
+/* ---------- پلان طبقات (SVG) ---------- */
+const planModal = document.getElementById('planModal');
+let planVilla = null, planFloor = 0;
+function openPlan(v){
+  planVilla = v; planFloor = 0;
+  document.getElementById('planTitle').textContent = '🏠 پلان ' + v.name;
+  const tabs = document.getElementById('planTabs');
+  tabs.innerHTML = v.plans.map((p,i)=>`<button class="ptab ${i===0?'active':''}" data-i="${i}">${p.name}</button>`).join('');
+  tabs.querySelectorAll('.ptab').forEach(b=>b.onclick=()=>{
+    planFloor = +b.dataset.i;
+    tabs.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('active',x===b));
+    drawPlan();
+  });
+  drawPlan();
+  planModal.style.display = 'flex';
+  focusFront(v);
+  currentFront = v.id; renderFronts();
+}
+document.getElementById('pclose2').onclick = ()=>planModal.style.display='none';
+planModal.addEventListener('click', e=>{ if(e.target===planModal) planModal.style.display='none'; });
+
+function drawPlan(){
+  const p = planVilla.plans[planFloor];
+  const W = 460, H = 300, sx = W/46, sy = H/30;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="direction:ltr">
+    <rect x="0" y="0" width="${W}" height="${H}" fill="#f5f1e8"/>
+    <rect x="14" y="14" width="${W-28}" height="${H-28}" fill="#fdfbf5" stroke="#5a4a38" stroke-width="5"/>`;
+  p.rooms.forEach(r=>{
+    const x = 14 + r.x*sx, y = 14 + r.y*sy, w = r.w*sx, h = r.h*sy;
+    svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${r.n.includes('تراس')?'#e8f0dd':'#fff'}" stroke="#8a7a62" stroke-width="2.5" rx="3"/>
+      <text x="${x+w/2}" y="${y+h/2-4}" text-anchor="middle" font-size="12" font-weight="bold" fill="#4a3f30" font-family="Tahoma">${r.n}</text>
+      <text x="${x+w/2}" y="${y+h/2+12}" text-anchor="middle" font-size="9" fill="#9a8a70" font-family="Tahoma">${Math.round(r.w*0.8)} × ${Math.round(r.h*0.8)} متر</text>`;
+  });
+  svg += `<text x="${W-24}" y="${H-22}" text-anchor="end" font-size="10" fill="#8a7a62" font-family="Tahoma">مقیاس تقریبی — نسخه موقت تا ارائه پلان اصلی</text></svg>`;
+  document.getElementById('planBody').innerHTML = svg;
+}
+
+/* ================= ناوبری ================= */
+function switchView(name){
+  document.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active', x.dataset.view===name));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+  if(name==='dash') renderDash();
+  if(name==='report') renderReports(repQuery);
+  if(name==='comments') renderComments();
+  if(name==='gantt') renderWbs();
+  if(name==='ledger') renderLedger();
+  if(name==='estimate') renderEstimate();
+  if(name==='inventory') renderInventory();
+  if(name==='contractors') renderContractors();
+  if(name==='gallery') renderGallery();
+  if(name==='reminders') renderReminders();
+}
+document.querySelectorAll('.navbtn').forEach(b=>{ b.onclick = ()=>switchView(b.dataset.view); });
+
+/* ================= داشبورد ================= */
+function renderDash(){
+  const g = document.getElementById('dashGrid');
+  g.innerHTML = DATA.fronts.map(f=>`
+    <div class="dcard" style="--c:${f.css}" onclick="window.__go('${f.id}')">
+      <h3><span class="dot" style="width:9px;height:9px;border-radius:50%;background:${f.css}"></span>${f.name}</h3>
+      <div class="num">${f.progress}٪</div>
+      <div class="sub">${f.tasks.filter(t=>t.s==='done').length} انجام شده • ${f.tasks.filter(t=>t.s==='doing').length} در حال انجام • ${f.tasks.filter(t=>t.s==='todo').length} باقی‌مانده</div>
+      <div class="mini"><i style="width:${f.progress}%"></i></div>
+    </div>`).join('') + `
+    <div class="dcard" style="--c:#3a86ff" onclick="window.__gorep()">
+      <h3>📝 گزارش روزانه</h3><div class="num">${reports.length}</div>
+      <div class="sub">${reports.filter(r=>r.sent).length} ارسال‌شده به کارفرما</div>
+      <div class="mini"><i style="width:${Math.min(100, reports.length*10)}%"></i></div>
+    </div>
+    <div class="dcard" style="--c:#f4a833" onclick="window.__gocom()">
+      <h3>💬 نظرات</h3><div class="num">${comments.filter(c=>!c.resolved).length}</div>
+      <div class="sub">نظر باز از ${comments.length} نظر ثبت‌شده</div>
+      <div class="mini"><i style="width:${comments.length? (comments.filter(c=>c.resolved).length/comments.length*100):0}%"></i></div>
+    </div>`;
+}
+window.__go = id=>{ const f=DATA.fronts.find(x=>x.id===id); currentFront=id; renderFronts(); switchView('model'); if(f.type==='villa') openPlan(f); else focusFront(f); };
+window.__switchView = switchView;
+window.__gorep = ()=>switchView('report');
+window.__gocom = ()=>switchView('comments');
+
+/* ================= گزارش روزانه ================= */
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('fa-IR');
+const fa = n => String(n).replace(/\d/g, d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+const now = new Date();
+document.getElementById('rDate').value = '۱۴۰۴/۰۷/' + fa(now.getDate()).padStart(2,'۰');
+
+const frontSel = id => DATA.fronts.map(f=>`<option>${f.name}</option>`).join('');
+document.getElementById('rFront').innerHTML = frontSel();
+document.getElementById('cFront').innerHTML = frontSel();
+
+let mp = 6;
+const mpNum = document.getElementById('mpNum');
+document.getElementById('mpPlus').onclick = ()=>{ mpNum.textContent = ++mp; };
+document.getElementById('mpMinus').onclick = ()=>{ mpNum.textContent = --mp; };
+const chips = document.getElementById('rChips');
+chips.innerHTML = DATA.fronts.map((f,i)=>`<button class="chip ${i<2?'on':''}" style="--c:${f.css}" data-f="${f.name}">${f.name.split('—')[0].trim()}</button>`).join('');
+chips.querySelectorAll('.chip').forEach(c=>c.onclick=()=>c.classList.toggle('on'));
+
+/* ---------- بخش‌های تکرارشونده گزارش (نیرو، خرید، مصالح، تنخواه...) ---------- */
+const REPEATERS = {
+  man:  { fields:[{k:'group',ph:'گروه / شرکت پیمانکار',s:'1.2'},{k:'work',ph:'موضوع کار',s:'1'},{k:'count',ph:'نفرات',c:'num'},{k:'names',ph:'نام‌ها (با کاما جدا کنید)',s:'1.4'}] },
+  buy:  { fields:[{k:'item',ph:'شرح خرید',s:'1.3'},{k:'qty',ph:'مقدار',c:'num'},{k:'price',ph:'مبلغ (ریال)',c:'money'}], sumK:'price' },
+  mat:  { fields:[{k:'item',ph:'شرح مصالح',s:'1.3'},{k:'qty',ph:'مقدار',c:'num'},{k:'unit',ph:'واحد',c:'num'},{k:'supplier',ph:'تامین‌کننده',s:'1'}] },
+  use:  { fields:[{k:'item',ph:'مصالح تحویلی',s:'1.2'},{k:'qty',ph:'مقدار',c:'num'},{k:'to',ph:'گروه دریافت‌کننده',s:'1'}] },
+  cash: { fields:[{k:'desc',ph:'بابت',s:'1.3'},{k:'amount',ph:'مبلغ (ریال)',c:'money'},{k:'to',ph:'گیرنده',s:'1'}], sumK:'amount' },
+  mach: { fields:[{k:'type',ph:'نوع ماشین / تجهیزات',s:'1.2'},{k:'count',ph:'تعداد',c:'num'},{k:'hours',ph:'ساعت کارکرد',c:'num'},{k:'operator',ph:'اپراتور',s:'1'}] },
+};
+const rowState = { man:[], buy:[], mat:[], use:[], cash:[], mach:[] };
+let rowUid = 1;
+
+function renderRow(sec, row){
+  const cfg = REPEATERS[sec];
+  const div = document.createElement('div');
+  div.className = 'drow';
+  div.dataset.rid = row.__id;
+  cfg.fields.forEach(f=>{
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.placeholder = f.ph;
+    inp.value = row[f.k] || '';
+    if(f.c) inp.className = f.c;
+    if(f.s) inp.style.flex = f.s;
+    inp.oninput = ()=>{ row[f.k] = inp.value; updateSums(); };
+    div.appendChild(inp);
+  });
+  const del = document.createElement('button');
+  del.className = 'del'; del.textContent = '✕';
+  del.onclick = ()=>{
+    rowState[sec] = rowState[sec].filter(r=>r.__id!==row.__id);
+    div.remove(); updateSums();
+  };
+  div.appendChild(del);
+  document.getElementById('sec'+sec.charAt(0).toUpperCase()+sec.slice(1)).appendChild(div);
+}
+function addRow(sec, data){
+  const row = {...data, __id: rowUid++};
+  rowState[sec].push(row);
+  renderRow(sec, row);
+  updateSums();
+}
+document.querySelectorAll('.addRow').forEach(b=>{
+  b.onclick = ()=>{
+    const sec = b.dataset.sec;
+    addRow(sec, sec==='man' ? {count:'1'} : (sec==='mach' ? {count:'1'} : {}));
+    document.querySelector(`#sec${sec.charAt(0).toUpperCase()+sec.slice(1)} .drow:last-child input`)?.focus();
+  };
+});
+function collectSec(sec){
+  return rowState[sec].map(r=>{
+    const o = {};
+    REPEATERS[sec].fields.forEach(f=>o[f.k] = (r[f.k]||'').trim());
+    return o;
+  }).filter(o=>Object.values(o).some(v=>v));
+}
+function updateSums(){
+  const n = i => parseFloat((i||'').replace(/[^\d.]/g,'')) || 0;
+  const manN = rowState.man.reduce((a,r)=>a + (n(r.count)||0), 0);
+  document.getElementById('manTotal').textContent = 'جمع نیروی امروز: ' + manN.toLocaleString('fa-IR') + ' نفر';
+  const buySum = rowState.buy.reduce((a,r)=>a + n(r.price), 0);
+  document.getElementById('buyTotal').textContent = 'جمع خریدها: ' + buySum.toLocaleString('fa-IR') + ' ریال';
+  const cashSum = rowState.cash.reduce((a,r)=>a + n(r.amount), 0);
+  document.getElementById('cashTotal').textContent = 'جمع تنخواه امروز: ' + cashSum.toLocaleString('fa-IR') + ' ریال';
+}
+// نمونه پیش‌فرض گروه‌های پیمانکار
+[['گروه بتن‌ریز','قالب‌بندی و بتن','8'],['گروه آچارکاری','تاسیسات مکانیکی','4'],['گروه نازک‌کاری','سفیدکاری','6']].forEach(g=>addRow('man',{group:g[0],work:g[1],count:g[2]}));
+
+// عکس‌ها
+let reportImgs = [];
+const drop = document.getElementById('rDrop'), fileIn = document.getElementById('rFile');
+drop.onclick = ()=>fileIn.click();
+fileIn.onchange = ()=>{
+  [...fileIn.files].slice(0,6).forEach(f=>{
+    const r = new FileReader();
+    r.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const c = document.createElement('canvas');
+        const k = Math.min(1, 640/Math.max(img.width,img.height));
+        c.width = img.width*k; c.height = img.height*k;
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        reportImgs.push(c.toDataURL('image/jpeg', .7));
+        renderThumbs();
+      };
+      img.src = e.target.result;
+    };
+    r.readAsDataURL(f);
+  });
+  fileIn.value = '';
+};
+function renderThumbs(){
+  document.getElementById('rThumbs').innerHTML = reportImgs.map((s,i)=>`<img src="${s}" onclick="window.__img('${i}')">`).join('');
+}
+window.__img = i=>{ document.getElementById('imgBig').src = reportImgs[i]; document.getElementById('imgModal').style.display='flex'; };
+
+const n_ = i => parseFloat((i||'').replace(/[^\d.]/g,'')) || 0;
+function collectReport(){
+  return {
+    id: Date.now(),
+    date: document.getElementById('rDate').value,
+    front: document.getElementById('rFront').value,
+    weather: document.getElementById('rWeather').value,
+    active: [...chips.querySelectorAll('.chip.on')].map(c=>c.dataset.f),
+    manpower: rowState.man.reduce((a,r)=>a+n_(r.count),0),
+    done: document.getElementById('rDone').value,
+    next: document.getElementById('rNext').value,
+    issue: document.getElementById('rIssue').value,
+    man: collectSec('man'),
+    buy: collectSec('buy'),
+    mat: collectSec('mat'),
+    use: collectSec('use'),
+    cash: collectSec('cash'),
+    mach: collectSec('mach'),
+    safety: document.getElementById('rSafety').value,
+    safetyNote: document.getElementById('rSafetyNote').value,
+    office: document.getElementById('rOffice').value,
+    imgs: [...reportImgs],
+    sent: false,
+  };
+}
+function clearForm(){
+  ['rDone','rNext','rIssue','rSafetyNote','rOffice'].forEach(id=>document.getElementById(id).value='');
+  Object.keys(rowState).forEach(sec=>{
+    rowState[sec] = [];
+    document.getElementById('sec'+sec.charAt(0).toUpperCase()+sec.slice(1)).innerHTML = '';
+  });
+  updateSums();
+  reportImgs = []; renderThumbs();
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+document.getElementById('rSave').onclick = ()=>{
+  const r = collectReport();
+  if(!r.done && !r.next){ toast('⚠️ حداقل یک بخش را پر کنید'); return; }
+  reports.unshift(r); save('reports', reports);
+  clearForm(); renderReports(); toast('✅ پیش‌نویس ذخیره شد');
+};
+document.getElementById('rSend').onclick = ()=>{
+  const r = collectReport();
+  if(!r.done){ toast('⚠️ بخش «کارهای انجام‌شده» را پر کنید'); return; }
+  r.sent = true; reports.unshift(r); save('reports', reports);
+  clearForm(); renderReports(); toast('📤 گزارش برای کارفرما ارسال شد');
+};
+
+let repQuery = '';
+document.getElementById('repSearch').oninput = e=>{ repQuery = e.target.value; renderReports(repQuery); };
+function renderReports(query){
+  const list = document.getElementById('rList');
+  let all = reports;
+  if(query){
+    const q = query.trim();
+    all = reports.filter(r=>[r.date,r.front,r.weather,r.done,r.next,r.issue,r.office,r.safetyNote,(r.man||[]).map(m=>(m.group||'')+(m.names||'')+(m.work||'')).join(' '),(r.buy||[]).map(b=>(b.item||'')+(b.qty||'')).join(' '),(r.mat||[]).map(m=>(m.item||'')+(m.supplier||'')).join(' '),(r.cash||[]).map(c=>(c.desc||'')+(c.to||'')).join(' ')].join(' ').includes(q));
+  }
+  if(!reports.length){ list.innerHTML = '<div class="empty">هنوز گزارشی ثبت نشده — اولین گزارش امروز را ثبت کنید 👆</div>'; return; }
+  if(!all.length){ list.innerHTML = `<div class="empty">🔍 نتیجه‌ای برای «${query}» پیدا نشد</div>`; return; }
+  const fmt = v => (+v||0).toLocaleString('fa-IR');
+  const table = (rows, cols) => rows.length ? `<table style="width:100%;font-size:11px;color:#a8b3c4;border-collapse:collapse;margin:6px 0">
+    <tr>${cols.map(c=>`<th style="text-align:right;padding:3px 6px;color:#8b96a8;border-bottom:1px solid rgba(255,255,255,.08)">${c[1]}</th>`).join('')}</tr>
+    ${rows.map(r=>`<tr>${cols.map(c=>`<td style="padding:3px 6px;border-bottom:1px solid rgba(255,255,255,.04)">${r[c[0]]||'—'}</td>`).join('')}</tr>`).join('')}</table>` : '';
+  list.innerHTML = all.map(r=>{
+    const buySum = r.buy.reduce((a,x)=>a+n_(x.price),0);
+    const cashSum = r.cash.reduce((a,x)=>a+n_(x.amount),0);
+    return `
+    <div class="ritem">
+      <div class="rhead">
+        📅 ${r.date} — ${r.front}
+        <span class="badge ${r.sent?'b-sent':'b-draft'}">${r.sent?'ارسال شده':'پیش‌نویس'}</span>
+        <span style="font-size:11px;color:#8b96a8;font-weight:400">${r.weather} • ${fmt(r.manpower)} نفر نیرو</span>
+      </div>
+      <div class="rsum">
+        <div class="box">👷 نیرو: <b>${fmt(r.manpower)}</b> نفر</div>
+        <div class="box">🛒 خریدها: <b>${fmt(buySum)}</b> ریال</div>
+        <div class="box">💰 تنخواه: <b>${fmt(cashSum)}</b> ریال</div>
+        ${r.mach.length?`<div class="box">🚜 ماشین‌آلات: <b>${fmt(r.mach.length)}</b> دستگاه</div>`:''}
+      </div>
+      ${r.active.length?`<div style="font-size:10.5px;color:#8b96a8;margin-top:6px">جبهه‌های فعال: ${r.active.join('، ')}</div>`:''}
+      ${r.done?`<div class="rbody"><b style="color:#2fbf71">انجام‌شده:</b>\n${r.done}</div>`:''}
+      ${r.next?`<div class="rbody"><b style="color:#f4a833">برنامه فردا:</b>\n${r.next}</div>`:''}
+      ${r.issue?`<div class="rbody"><b style="color:#e05252">موانع:</b> ${r.issue}</div>`:''}
+      ${r.man.length?`<div class="sectTitle" style="font-size:11.5px;color:#8b96a8;margin-top:10px">👷 گروه‌های پیمانکار</div>${table(r.man,[['group','گروه'],['work','موضوع کار'],['count','نفرات'],['names','نام‌ها']])}`:''}
+      ${r.buy.length?`<div class="sectTitle" style="font-size:11.5px;color:#8b96a8;margin-top:10px">🛒 خریدها</div>${table(r.buy,[['item','شرح'],['qty','مقدار'],['price','مبلغ (ریال)']])}`:''}
+      ${r.mat.length?`<div class="sectTitle" style="font-size:11.5px;color:#8b96a8;margin-top:10px">🧱 مصالح ورودی</div>${table(r.mat,[['item','شرح'],['qty','مقدار'],['unit','واحد'],['supplier','تامین‌کننده']])}`:''}
+      ${r.use.length?`<div class="sectTitle" style="font-size:11.5px;color:#8b96a8;margin-top:10px">📤 تحویل مصالح</div>${table(r.use,[['item','مصالح'],['qty','مقدار'],['to','گروه']])}`:''}
+      ${r.cash.length?`<div class="sectTitle" style="font-size:11.5px;color:#8b96a8;margin-top:10px">💰 پرداختی تنخواه</div>${table(r.cash,[['desc','بابت'],['amount','مبلغ (ریال)'],['to','گیرنده']])}`:''}
+      ${r.mach.length?`<div class="sectTitle" style="font-size:11.5px;color:#8b96a8;margin-top:10px">🚜 ماشین‌آلات</div>${table(r.mach,[['type','نوع'],['count','تعداد'],['hours','ساعت کارکرد'],['operator','اپراتور']])}`:''}
+      ${r.safety?`<div class="rbody"><b style="color:#3a86ff">🦺 ایمنی:</b> ${r.safety}${r.safetyNote?' — '+r.safetyNote:''}</div>`:''}
+      ${r.office?`<div class="rbody"><b style="color:#9b59b6">📞 درخواست از دفتر:</b> ${r.office}</div>`:''}
+      ${r.imgs.length?`<div class="rimgs">${r.imgs.map((s,i)=>`<div style="position:relative;display:inline-block"><img src="${s}" onclick="window.__rimg('${r.id}','${i}')"><span style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.65);color:#fff;font-size:8.5px;padding:1px 5px;border-radius:4px">${r.date}</span></div>`).join('')}</div>`:''}
+      <div class="ractions">
+        ${!r.sent?`<button class="btn btn-g" onclick="window.__sendRep(${r.id})">📤 ارسال به کارفرما</button>`:''}
+        <button class="btn btn-s" onclick="window.__printRep(${r.id})">🖨️ چاپ / PDF</button>
+        <button class="btn btn-s" onclick="window.__delRep(${r.id})">🗑️ حذف</button>
+      </div>
+    </div>`;}).join('');
+}
+window.__sendRep = id=>{ const r=reports.find(x=>x.id===id); if(r){ r.sent=true; save('reports',reports); renderReports(); toast('📤 ارسال شد'); } };
+window.__printRep = id=>{
+  const r = reports.find(x=>x.id===id); if(!r) return;
+  const fmt = v => (+v||0).toLocaleString('fa-IR');
+  const n_ = i => parseFloat((i||'').replace(/[^\d.]/g,'')) || 0;
+  const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const logo = S('companyLogo');
+  const repNo = String(reports.slice().reverse().findIndex(x=>x.id===id)+1).padStart(3,'0');
+  const tbl = (no, title, rows, cols) => rows.length ? `<div class="stitle"><span class="sno">${no}</span>${title}</div>
+    <table><tr>${cols.map(c=>`<th>${c[1]}</th>`).join('')}</tr>
+    ${rows.map(x=>`<tr>${cols.map(c=>`<td>${esc(x[c[0]])||'—'}</td>`).join('')}</tr>`).join('')}</table>` : '';
+  const buySum = r.buy.reduce((a,x)=>a+n_(x.price),0);
+  const cashSum = r.cash.reduce((a,x)=>a+n_(x.amount),0);
+  const manCount = r.man.reduce((a,x)=>a+n_(x.count),0) || r.manpower;
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>گزارش روزانه ${r.date}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+  <style>
+    @page { size:A4; margin:14mm 12mm; }
+    * { box-sizing:border-box; }
+    body { font-family:Tahoma; color:#1a1a1a; font-size:11px; margin:0; }
+    .head { display:flex; align-items:center; gap:14px; border:2px solid #8a6d3b; border-radius:8px; padding:12px 16px; }
+    .head img { height:64px; max-width:110px; object-fit:contain; }
+    .head .logo-ph { height:64px; width:110px; border:1.5px dashed #b09a6d; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#b09a6d; font-size:10px; }
+    .htitle { flex:1; text-align:center; }
+    .htitle .co { font-size:16px; font-weight:bold; color:#5a4322; letter-spacing:.5px; }
+    .htitle .sub { font-size:10px; color:#7a6a4d; margin-top:3px; }
+    .htitle .doc { display:inline-block; background:#8a6d3b; color:#fff; font-size:12px; font-weight:bold; padding:4px 26px; border-radius:5px; margin-top:7px; }
+    .meta { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0; border:1px solid #c8bda5; border-radius:6px; margin:10px 0; overflow:hidden; }
+    .meta div { padding:6px 10px; font-size:10.5px; border-left:1px solid #e2dac8; }
+    .meta div:nth-child(3n) { border-left:none; }
+    .meta b { color:#5a4322; }
+    .meta .lab { display:inline-block; min-width:58px; color:#7a6a4d; }
+    .sums { display:flex; gap:8px; margin:0 0 10px; }
+    .sums div { flex:1; text-align:center; border:1px solid #c8bda5; border-radius:6px; padding:7px 4px; background:#faf7f0; }
+    .sums .v { font-size:14px; font-weight:bold; color:#5a4322; }
+    .sums .l { font-size:9.5px; color:#7a6a4d; margin-top:2px; }
+    .stitle { display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:bold; color:#5a4322; margin:12px 0 5px; }
+    .sno { background:#8a6d3b; color:#fff; min-width:19px; height:19px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:9.5px; }
+    table { width:100%; border-collapse:collapse; font-size:10px; }
+    th { background:#efe9dc; text-align:right; padding:4px 7px; border:1px solid #c8bda5; color:#5a4322; font-size:9.5px; }
+    td { padding:3.5px 7px; border:1px solid #ddd5c3; }
+    tr:nth-child(even) td { background:#faf8f3; }
+    .sec { border:1px solid #ddd5c3; border-radius:5px; padding:7px 10px; font-size:10.5px; line-height:1.9; margin-bottom:4px; }
+    .lbl { font-weight:bold; color:#5a4322; }
+    .imgs { display:flex; flex-wrap:wrap; gap:6px; }
+    .imgs img { width:150px; height:105px; object-fit:cover; border:1px solid #c8bda5; border-radius:4px; }
+    .sign { display:flex; justify-content:space-between; margin-top:34px; page-break-inside:avoid; }
+    .sign div { text-align:center; font-size:10px; color:#5a4322; width:30%; }
+    .sign .line { margin-top:34px; border-top:1.5px solid #8a6d3b; padding-top:5px; font-weight:bold; }
+    .foot { margin-top:16px; border-top:1px solid #c8bda5; padding-top:5px; font-size:8.5px; color:#999; display:flex; justify-content:space-between; }
+  </style></head><body>
+  <div class="head">
+    ${logo ? `<img src="${logo}">` : `<div class="logo-ph">لوگوی شرکت</div>`}
+    <div class="htitle">
+      <div class="co">پروژه ساخت ۴ واحد ویلا — لواسان</div>
+      <div class="sub">گزارش روزانه پیشرفت عملیات اجرایی کارگاه</div>
+      <div class="doc">گزارش شماره ${repNo}</div>
+    </div>
+    <div style="width:110px; text-align:left; font-size:9.5px; color:#7a6a4d;">
+      <div>پیوست: ${r.imgs.length} عکس</div>
+      <div>صفحات: چند</div>
+    </div>
+  </div>
+  <div class="meta">
+    <div><span class="lab">تاریخ:</span><b>${esc(r.date)}</b></div>
+    <div><span class="lab">آب‌وهوا:</span>${esc(r.weather)}</div>
+    <div><span class="lab">جبهه اصلی:</span>${esc(r.front)}</div>
+    <div><span class="lab">نیروی کارگاه:</span><b>${fmt(manCount)}</b> نفر</div>
+    <div><span class="lab">جبهه‌های فعال:</span>${esc(r.active.join('، '))||'—'}</div>
+    <div><span class="lab">وضعیت ایمنی:</span>${esc(r.safety)||'—'}</div>
+  </div>
+  <div class="sums">
+    <div><div class="v">${fmt(manCount)}</div><div class="l">نیروی انسانی (نفر)</div></div>
+    <div><div class="v">${fmt(buySum)}</div><div class="l">خریدهای روز (ریال)</div></div>
+    <div><div class="v">${fmt(cashSum)}</div><div class="l">پرداختی تنخواه (ریال)</div></div>
+    <div><div class="v">${fmt(r.mat.length)}</div><div class="l">اقلام مصالح ورودی</div></div>
+    <div><div class="v">${fmt(r.mach.length)}</div><div class="l">ماشین‌آلات فعال</div></div>
+  </div>
+  ${r.done?`<div class="stitle"><span class="sno">۱</span>خلاصه عملیات انجام‌شده</div><div class="sec">${esc(r.done)}</div>`:''}
+  ${r.next?`<div class="stitle"><span class="sno">۲</span>برنامه عملیات فردا</div><div class="sec">${esc(r.next)}</div>`:''}
+  ${r.issue?`<div class="stitle"><span class="sno">۳</span>موانع و مشکلات</div><div class="sec">${esc(r.issue)}</div>`:''}
+  ${tbl('۴', 'گروه‌های پیمانکار و نیروی انسانی', r.man, [['group','گروه / شرکت'],['work','موضوع کار'],['count','نفرات'],['names','اسامی']])}
+  ${tbl('۵', 'خریدهای روز', r.buy, [['item','شرح'],['qty','مقدار'],['price','مبلغ (ریال)']])}
+  ${tbl('۶', 'مصالح ورودی به کارگاه', r.mat, [['item','شرح'],['qty','مقدار'],['unit','واحد'],['supplier','تامین‌کننده']])}
+  ${tbl('۷', 'تحویل مصالح به گروه‌ها', r.use, [['item','مصالح'],['qty','مقدار'],['to','گروه دریافت‌کننده']])}
+  ${tbl('۸', 'پرداختی‌ها از تنخواه', r.cash, [['desc','بابت'],['amount','مبلغ (ریال)'],['to','گیرنده']])}
+  ${tbl('۹', 'ماشین‌آلات و تجهیزات', r.mach, [['type','نوع'],['count','تعداد'],['hours','ساعت کارکرد'],['operator','اپراتور']])}
+  ${r.safetyNote?`<div class="stitle"><span class="sno">۱۰</span>ملاحظات ایمنی</div><div class="sec">${esc(r.safetyNote)}</div>`:''}
+  ${r.office?`<div class="stitle"><span class="sno">۱۱</span>درخواست‌ها و پیگیری از دفتر مرکزی</div><div class="sec">${esc(r.office)}</div>`:''}
+  ${r.imgs.length?`<div class="stitle"><span class="sno">📷</span>تصاویر کارگاه</div><div class="imgs">${r.imgs.map(s=>`<div style="position:relative;display:inline-block"><img src="${s}" style="width:150px;height:105px;object-fit:cover;border:1px solid #c8bda5;border-radius:4px"><span style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.6);color:#fff;font-size:8px;padding:1px 5px;border-radius:3px">${CFG.name} — ${esc(r.date)}</span></div>`).join('')}</div>`:''}
+  <div class="sign">
+    <div><div class="line">سرپرست کارگاه</div></div>
+    <div><div class="line">کنترل کیفیت / ناظر مقیم</div></div>
+    <div><div class="line">کارفرما</div></div>
+  </div>
+  <div class="foot"><div>${CFG.name} — گزارش روزانه ${esc(r.date)}</div><div>این گزارش به‌صورت سیستمی تهیه شده است</div></div>
+  <script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script>
+  </body></html>`);
+  w.document.close();
+};
+// لوگوی شرکت
+const logoFile = document.getElementById('logoFile');
+document.getElementById('logoBtn').onclick = ()=>logoFile.click();
+document.getElementById('logoDel').onclick = ()=>{
+  localStorage.removeItem('lv4h_companyLogo');
+  document.getElementById('logoPreview').style.display='none';
+  toast('لوگو حذف شد');
+};
+logoFile.onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const c = document.createElement('canvas');
+      const k = Math.min(1, 300/Math.max(img.width,img.height));
+      c.width = img.width*k; c.height = img.height*k;
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const url = c.toDataURL('image/png');
+      save('companyLogo', url);
+      const pv = document.getElementById('logoPreview');
+      pv.src = url; pv.style.display = 'block';
+      toast('✅ لوگو ذخیره شد — در گزارش‌های چاپی اعمال می‌شود');
+    };
+    img.src = ev.target.result;
+  };
+  rd.readAsDataURL(f);
+  e.target.value='';
+};
+if(S('companyLogo')){ const pv=document.getElementById('logoPreview'); pv.src=S('companyLogo'); pv.style.display='block'; }
+window.__delRep = id=>{ reports = reports.filter(x=>x.id!==id); save('reports',reports); renderReports(); };
+window.__rimg = (id,i)=>{
+  const r = reports.find(x=>x.id===id);
+  document.getElementById('imgBig').src = r.imgs[i];
+  document.getElementById('imgModal').style.display='flex';
+};
+renderReports();
+
+/* ================= نظرات ================= */
+let cFilter = 'all';
+document.querySelectorAll('#cFilter .chip').forEach(c=>c.onclick=()=>{
+  cFilter = c.dataset.f;
+  document.querySelectorAll('#cFilter .chip').forEach(x=>x.classList.toggle('on',x===c));
+  renderComments();
+});
+const ROLE_COLORS = {'کارفرما':'#e05252','معمار ناظر':'#3a86ff','سرپرست کارگاه':'#f4a833'};
+document.getElementById('cAdd').onclick = ()=>{
+  const text = document.getElementById('cText').value.trim();
+  if(!text){ toast('⚠️ متن نظر را وارد کنید'); return; }
+  comments.unshift({
+    id: Date.now(),
+    role: document.getElementById('cRole').value,
+    name: document.getElementById('cName').value.trim(),
+    front: document.getElementById('cFront').value,
+    text, date: new Date().toLocaleDateString('fa-IR'),
+    resolved: false,
+  });
+  save('comments', comments);
+  document.getElementById('cText').value = '';
+  renderComments(); toast('✅ نظر ثبت شد');
+};
+function renderComments(){
+  const list = document.getElementById('cList');
+  let arr = comments;
+  if(cFilter==='open') arr = comments.filter(c=>!c.resolved);
+  else if(cFilter!=='all') arr = comments.filter(c=>c.role===cFilter);
+  if(!arr.length){ list.innerHTML = '<div class="empty">نظری یافت نشد</div>'; return; }
+  list.innerHTML = arr.map(c=>`
+    <div class="comment ${c.resolved?'resolved':''}">
+      <div class="chead">
+        <div class="avatar" style="background:${ROLE_COLORS[c.role]}">${c.role.charAt(0)}</div>
+        <b>${c.name || c.role}</b>
+        <span class="role" style="background:${ROLE_COLORS[c.role]}22;color:${ROLE_COLORS[c.role]}">${c.role}</span>
+        <span style="font-size:10.5px;color:#5d6a80">📍 ${c.front}</span>
+        ${c.resolved?'<span class="resolvedmark">✔ حل شده</span>':''}
+        <span style="margin-right:auto;font-size:10.5px;color:#5d6a80">${c.date}</span>
+      </div>
+      <div class="cbody">${c.text}</div>
+      <div class="ractions" style="margin-right:38px">
+        <button class="btn btn-s" onclick="window.__resolve(${c.id})">${c.resolved?'↩️ بازگشایی':'✔ تایید حل'}</button>
+        <button class="btn btn-s" onclick="window.__delCom(${c.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+window.__resolve = id=>{ const c=comments.find(x=>x.id===id); if(c){ c.resolved=!c.resolved; save('comments',comments); renderComments(); } };
+window.__delCom = id=>{ comments = comments.filter(x=>x.id!==id); save('comments',comments); renderComments(); };
+
+/* ================= ابزارهای ادمین ================= */
+const ADMIN_PASS = '1234';
+let adminMode = false, adminTool = 'select';
+let marks = S('marks3d') || [];
+let measures = S('measures3d') || [];
+let pendingPos = null, editingMark = null, pendingMove = null;
+let measurePts = [], measureDraft = null, clipPlane = null, isolatedMats = null;
+let modelMaxY = 20;
+
+const markGroup = new THREE.Group(); scene.add(markGroup);
+const measureGroup = new THREE.Group(); scene.add(measureGroup);
+const TYPE = {
+  pin:   { icon:'📍', color:'#f4a833' },
+  note:  { icon:'📝', color:'#3a86ff' },
+  warn:  { icon:'⚠️', color:'#e05252' },
+  check: { icon:'✅', color:'#2fbf71' },
+  spot:  { icon:'🎯', color:'#ff9800' },
+};
+function markTexture(icon, color){
+  const c = document.createElement('canvas'); c.width=c.height=128;
+  const g = c.getContext('2d');
+  g.beginPath(); g.arc(64,64,38,0,Math.PI*2);
+  g.fillStyle = 'rgba(10,15,28,.9)'; g.fill();
+  g.lineWidth = 6; g.strokeStyle = color; g.stroke();
+  g.font = '48px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillText(icon, 64, 66);
+  return new THREE.CanvasTexture(c);
+}
+function renderMarks(){
+  markGroup.clear();
+  marks.forEach(m=>{
+    const t = TYPE[m.type] || TYPE.pin;
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: markTexture(t.icon, t.color), depthWrite:false }));
+    spr.position.set(...m.pos); spr.scale.set(1.6,1.6,1);
+    spr.userData.markId = m.id;
+    if(m.type==='spot') spr.userData.spot = true;
+    markGroup.add(spr);
+    if(m.type==='spot'){
+      const ring = new THREE.Sprite(new THREE.SpriteMaterial({map:makePinTexture(t.color,true), transparent:true, opacity:.5, depthWrite:false}));
+      ring.position.copy(spr.position); ring.userData.spotRing = true;
+      markGroup.add(ring);
+    }
+  });
+}
+function renderMeasures(){
+  measureGroup.clear();
+  measures.forEach(mm=>{
+    const a = new THREE.Vector3(...mm.a), b = new THREE.Vector3(...mm.b);
+    const geo = new THREE.BufferGeometry().setFromPoints([a,b]);
+    const ln = new THREE.Line(geo, new THREE.LineBasicMaterial({color:0x3a86ff}));
+    ln.userData.measureId = mm.id;
+    measureGroup.add(ln);
+    const mid = a.clone().add(b).multiplyScalar(.5);
+    const c = document.createElement('canvas'); c.width=256; c.height=72;
+    const g = c.getContext('2d');
+    g.fillStyle='#3a86ff'; roundRect(g,4,4,248,64,16); g.fill();
+    g.fillStyle='#fff'; g.font='bold 30px Tahoma'; g.textAlign='center'; g.textBaseline='middle';
+    g.fillText(mm.dist.toFixed(2)+' m', 128, 38);
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c), depthWrite:false}));
+    spr.position.copy(mid); spr.scale.set(3.2,.9,1);
+    spr.userData.measureId = mm.id;
+    measureGroup.add(spr);
+  });
+}
+function addMeasureDraft(){
+  if(measureDraft) measureGroup.remove(measureDraft);
+  if(measurePts.length===2){
+    const geo = new THREE.BufferGeometry().setFromPoints(measurePts);
+    measureDraft = new THREE.Line(geo, new THREE.LineDashedMaterial({color:0x3a86ff, dashSize:.5, gapSize:.25, transparent:true, opacity:.7}));
+    measureDraft.computeLineDistances();
+    measureGroup.add(measureDraft);
+  }
+}
+function clearMeasureDraft(){
+  if(measureDraft){ measureGroup.remove(measureDraft); measureDraft = null; }
+  measurePts = [];
+  document.getElementById('measureLabel').style.display = 'none';
+}
+
+function resetIsolate(){
+  if(!isolatedMats) return;
+  isolatedMats.forEach(({mat, transparent, opacity})=>{ mat.transparent = transparent; mat.opacity = opacity; });
+  isolatedMats = null;
+}
+function handleAdminClick(e){
+  if(!adminMode) return false;
+  mouse.x = (e.clientX/innerWidth)*2-1;
+  mouse.y = -(e.clientY/innerHeight)*2+1;
+  raycaster.setFromCamera(mouse, camera);
+
+  // --- ابزار اندازه‌گیری ---
+  if(adminTool==='measure'){
+    if(!realModel) return true;
+    const hits = raycaster.intersectObject(realModel, true);
+    if(!hits.length) return true;
+    const p = hits[0].point.clone();
+    measurePts.push(p);
+    if(measurePts.length===2){
+      const dist = measurePts[0].distanceTo(measurePts[1]);
+      measures.push({id:Date.now(), a:measurePts[0].toArray(), b:measurePts[1].toArray(), dist});
+      save('measures3d', measures);
+      renderMeasures();
+      clearMeasureDraft();
+      toast('📏 فاصله ثبت شد: ' + dist.toFixed(2) + ' متر (تقریبی)');
+    } else {
+      addMeasureDraft();
+      toast('نقطه دوم را کلیک کنید');
+    }
+    return true;
+  }
+
+  // --- ابزارهای گذاشتن مارکر ---
+  if(['pin','note','warn','check','spot'].includes(adminTool)){
+    if(!realModel) return true;
+    const hits = raycaster.intersectObject(realModel, true);
+    if(!hits.length) return true;
+    pendingPos = hits[0].point.toArray();
+    openMarkModal(adminTool, null);
+    return true;
+  }
+
+  // --- انتخاب: کلیک روی مارکرها ---
+  if(adminTool==='select'){
+    const mh = raycaster.intersectObjects(markGroup.children);
+    if(mh.length){
+      const m = marks.find(x=>x.id===mh[0].object.userData.markId);
+      if(m) openMarkModal(m.type, m);
+      return true;
+    }
+    const mh2 = raycaster.intersectObjects(measureGroup.children.filter(o=>o.isSprite));
+    if(mh2.length){
+      const id = mh2[0].object.userData.measureId;
+      measures = measures.filter(x=>x.id!==id);
+      save('measures3d', measures);
+      renderMeasures();
+      toast('🗑️ اندازه‌گیری حذف شد');
+      return true;
+    }
+  }
+
+  // --- رنگ‌آمیزی ---
+  if(adminTool==='paint'){
+    if(!realModel) return true;
+    const hits = raycaster.intersectObject(realModel, true);
+    if(!hits.length) return true;
+    applyPaint(hits[0].object, paintColor, paintFinish);
+    toast('🎨 اعمال شد — ' + (hits[0].object.name || 'بدون نام'));
+    return true;
+  }
+
+  // --- ایزوله کردن ---
+  if(adminTool==='isolate'){
+    if(!realModel) return true;
+    const hits = raycaster.intersectObject(realModel, true);
+    resetIsolate();
+    if(!hits.length){ toast('👁️ بازنشانی شد — همه بخش‌ها نمایان شد'); return true; }
+    const target = hits[0].object;
+    isolatedMats = [];
+    realModel.traverse(o=>{
+      if(o.isMesh && o!==target && o.material){
+        isolatedMats.push({mat:o.material, transparent:o.material.transparent, opacity:o.material.opacity});
+        o.material.transparent = true; o.material.opacity = .08;
+      }
+    });
+    toast('👁️ ایزوله شد — کلیک روی فضای خالی = بازنشانی');
+    return true;
+  }
+  return false;
+}
+
+// --- مودال مارکر ---
+const markModal = document.getElementById('markModal');
+let shotData = null;
+function openMarkModal(type, existing){
+  editingMark = existing;
+  shotData = existing?.img || null;
+  document.getElementById('mmTitle').textContent = (TYPE[type].icon) + (existing ? ' ویرایش ' : ' افزودن ') + ({pin:'پین',note:'یادداشت',warn:'هشدار',check:'تایید کیفیت',spot:'نشانگر چشمک‌زن'})[type];
+  document.getElementById('mmTitleIn').value = existing?.title || '';
+  document.getElementById('mmDesc').value = existing?.desc || '';
+  document.getElementById('mmFront').innerHTML = DATA.fronts.map(f=>`<option ${existing?.front===f.name?'selected':''}>${f.name}</option>`).join('');
+  document.getElementById('mmStatusWrap').style.display = type==='pin' ? 'block' : 'none';
+  if(existing?.status) document.getElementById('mmStatus').value = existing.status;
+  const img = document.getElementById('mmImg');
+  if(shotData){ img.src = shotData; img.style.display='block'; } else img.style.display='none';
+  markModal.dataset.type = type;
+  markModal.style.display = 'flex';
+}
+document.getElementById('mmCancel').onclick = ()=>{ markModal.style.display='none'; pendingPos=null; editingMark=null; pendingMove=null; };
+document.getElementById('mmSave').onclick = ()=>{
+  const type = markModal.dataset.type;
+  const title = document.getElementById('mmTitleIn').value.trim();
+  if(!title){ toast('⚠️ عنوان را وارد کنید'); return; }
+  if(editingMark){
+    editingMark.title = title;
+    editingMark.desc = document.getElementById('mmDesc').value;
+    editingMark.front = document.getElementById('mmFront').value;
+    editingMark.img = shotData;
+    if(type==='pin') editingMark.status = document.getElementById('mmStatus').value;
+    if(pendingMove){ editingMark.pos = pendingMove; pendingMove = null; }
+  } else {
+    marks.push({
+      id: Date.now(), type, pos: pendingPos,
+      title, desc: document.getElementById('mmDesc').value,
+      front: document.getElementById('mmFront').value,
+      status: document.getElementById('mmStatus').value,
+      img: shotData,
+    });
+  }
+  save('marks3d', marks);
+  renderMarks();
+  markModal.style.display='none';
+  pendingPos = null; editingMark = null; pendingMove = null;
+  setTool('select');
+  toast('✅ ذخیره شد');
+};
+document.getElementById('mmShot').onclick = ()=>{
+  renderer.render(scene, camera);
+  shotData = renderer.domElement.toDataURL('image/jpeg', .7);
+  const img = document.getElementById('mmImg');
+  img.src = shotData; img.style.display='block';
+};
+document.getElementById('mmFileBtn').onclick = ()=>document.getElementById('mmFile').click();
+document.getElementById('mmFile').onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const c = document.createElement('canvas');
+      const k = Math.min(1, 640/Math.max(img.width,img.height));
+      c.width = img.width*k; c.height = img.height*k;
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      shotData = c.toDataURL('image/jpeg', .7);
+      const mi = document.getElementById('mmImg');
+      mi.src = shotData; mi.style.display='block';
+    };
+    img.src = ev.target.result;
+  };
+  r.readAsDataURL(f);
+  e.target.value = '';
+};
+
+// --- نوار ابزار و حالت ادمین ---
+function setTool(t){
+  adminTool = t;
+  document.querySelectorAll('.tool[data-tool]').forEach(b=>b.classList.toggle('on', b.dataset.tool===t));
+  document.getElementById('clipSliderWrap').style.display = t==='clip' ? 'flex' : 'none';
+  document.getElementById('paintPalette').style.display = t==='paint' ? 'block' : 'none';
+  document.getElementById('explodeWrap').style.display = t==='explode' ? 'flex' : 'none';
+  if(t!=='clip' && clipPlane){ renderer.clippingPlanes = []; clipPlane = null; document.getElementById('clipSlider').value = 100; }
+  if(t!=='measure') clearMeasureDraft();
+  if(t!=='explode' && realModel) explodeApply(0);
+  renderer.domElement.style.cursor = t==='select' ? 'default' : 'crosshair';
+}
+document.querySelectorAll('.tool[data-tool]').forEach(b=>{
+  b.onclick = ()=>{
+    const t = b.dataset.tool;
+    if(t==='clip' && adminTool==='clip') t = 'select';
+    setTool(t);
+    if(t==='clip') showClipSlider();
+    if(t==='measure') toast('دو نقطه روی مدل کلیک کنید');
+    if(t==='isolate') toast('روی بخشی کلیک کنید تا بقیه کم‌رنگ شود — کلیک خالی = بازنشانی');
+  };
+});
+function showClipSlider(){
+  if(!realModel) return;
+  const box = new THREE.Box3().setFromObject(realModel);
+  modelMaxY = box.max.y;
+  document.getElementById('clipSliderWrap').style.display = 'flex';
+}
+document.getElementById('clipSlider').oninput = e=>{
+  const v = +e.target.value;
+  document.getElementById('clipVal').textContent = v>=100 ? 'خاموش' : (modelMaxY*v/100).toFixed(1)+'m';
+  if(v>=100){ renderer.clippingPlanes = []; clipPlane = null; }
+  else {
+    clipPlane = new THREE.Plane(new THREE.Vector3(0,-1,0), modelMaxY*v/100);
+    renderer.clippingPlanes = [clipPlane];
+  }
+};
+document.getElementById('clipOff').onclick = ()=>{
+  document.getElementById('clipSlider').value = 100;
+  renderer.clippingPlanes = []; clipPlane = null;
+  document.getElementById('clipVal').textContent = '—';
+};
+
+// خروجی/ورودی JSON
+document.getElementById('expBtn').onclick = ()=>{
+  const blob = new Blob([JSON.stringify({marks, measures}, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'lavasan-4villa-marks.json';
+  a.click();
+  toast('⬇️ فایل JSON دانلود شد');
+};
+document.getElementById('impBtn').onclick = ()=>document.getElementById('jsonFile').click();
+document.getElementById('jsonFile').onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev=>{
+    try {
+      const d = JSON.parse(ev.target.result);
+      if(d.marks) { marks = d.marks; save('marks3d', marks); renderMarks(); }
+      if(d.measures) { measures = d.measures; save('measures3d', measures); renderMeasures(); }
+      toast('✅ داده‌ها وارد شد');
+    } catch { toast('❌ فایل نامعتبر است'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+};
+
+// ورود/خروج ادمین
+const loginModal = document.getElementById('loginModal');
+document.getElementById('lockBtn').onclick = ()=>{
+  if(adminMode){
+    adminMode = false; setTool('select');
+    document.getElementById('adminBar').classList.remove('show');
+    document.getElementById('adminBadge').classList.remove('show');
+    document.getElementById('lockBtn').textContent = '🔓';
+    toast('حالت ادمین خاموش شد');
+  } else {
+    loginModal.style.display = 'flex';
+    document.getElementById('adminPass').value = '';
+    setTimeout(()=>document.getElementById('adminPass').focus(), 50);
+  }
+};
+document.getElementById('loginCancel').onclick = ()=>loginModal.style.display='none';
+function doLogin(){
+  if(document.getElementById('adminPass').value === ADMIN_PASS){
+    adminMode = true;
+    loginModal.style.display = 'none';
+    document.getElementById('adminBar').classList.add('show');
+    document.getElementById('adminBadge').classList.add('show');
+    document.getElementById('lockBtn').textContent = '🔒';
+    toast('🛠️ حالت ادمین فعال شد');
+  } else toast('❌ رمز اشتباه است');
+}
+document.getElementById('loginOk').onclick = doLogin;
+document.getElementById('adminPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+// کلید Escape = لغو ابزار فعال
+addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    if(adminTool!=='select'){ setTool('select'); resetIsolate(); }
+    hidePopup();
+  }
+});
+
+renderMarks();
+renderMeasures();
+
+// --- رنگ‌آمیزی و جنس ظاهری ---
+let paintColor = '#e05252', paintFinish = 'matte';
+const paintMap = S('paintMap') || {};
+const FINISH = {
+  matte:  m=>{ m.roughness=.92; m.metalness=0; m.transparent=false; m.opacity=1; },
+  semi:   m=>{ m.roughness=.5;  m.metalness=.15; m.transparent=false; m.opacity=1; },
+  glossy: m=>{ m.roughness=.12; m.metalness=.55; m.transparent=false; m.opacity=1; },
+  glass:  m=>{ m.roughness=.08; m.metalness=.1; m.transparent=true; m.opacity=.45; },
+};
+function applyPaint(mesh, color, finish, persist=true){
+  // متریال ممکن است بین چند مش مشترک باشد — حتماً کپی می‌کنیم
+  if(!mesh.userData.__cloned){
+    mesh.material = mesh.material.clone();
+    mesh.userData.__cloned = true;
+  }
+  const mat = mesh.material;
+  mat.color = new THREE.Color(color);
+  FINISH[finish](mat);
+  if(persist){
+    const key = mesh.name || mesh.uuid;
+    paintMap[key] = { color, finish };
+    save('paintMap', paintMap);
+  }
+}
+function applyPaintMap(){
+  if(!realModel) return;
+  realModel.traverse(o=>{
+    if(o.isMesh && o.material){
+      const p = paintMap[o.name || o.uuid];
+      if(p) applyPaint(o, p.color, p.finish, false);
+    }
+  });
+}
+// پالت رنگ
+const PALETTE = ['#e05252','#e8912a','#f4d03f','#2fbf71','#27ae60','#3a86ff','#9b59b6','#e8e6e0','#8a5a2b','#95a5a6','#34495e','#c9b8a3'];
+const pc = document.getElementById('paintColors');
+PALETTE.forEach((c,i)=>{
+  const b = document.createElement('button');
+  b.style.background = c;
+  if(i===0) b.classList.add('on');
+  b.onclick = ()=>{ paintColor = c; pc.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); };
+  pc.appendChild(b);
+});
+document.querySelectorAll('#paintFinish .fin').forEach(b=>{
+  b.onclick = ()=>{
+    paintFinish = b.dataset.f;
+    document.querySelectorAll('#paintFinish .fin').forEach(x=>x.classList.toggle('on', x===b));
+  };
+});
+document.getElementById('paintReset').onclick = ()=>{
+  Object.keys(paintMap).forEach(k=>delete paintMap[k]);
+  save('paintMap', paintMap);
+  // بازسازی متریال از حالت اولیه: مدل را دوباره لود می‌کنیم
+  if(realModel){ scene.remove(realModel); realModel = null; }
+  loadRealModel().then(()=>toast('♻️ رنگ‌ها به حالت اول برگشت'));
+};
+
+// --- انفجار طبقات ---
+let explodeGroups = null;
+function buildExplodeGroups(){
+  if(explodeGroups || !realModel) return;
+  realModel.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(realModel);
+  const minY = box.min.y, H = Math.max(box.max.y - minY, 1);
+  const NB = 8;
+  const bands = new Map();
+  const meshes = [];
+  realModel.traverse(o=>{ if(o.isMesh) meshes.push(o); });
+  meshes.forEach(m=>{
+    const mb = new THREE.Box3().setFromObject(m);
+    const cy = (mb.min.y + mb.max.y) / 2;
+    const idx = Math.max(0, Math.min(NB-1, Math.floor((cy - minY) / (H/NB))));
+    if(!bands.has(idx)) bands.set(idx, []);
+    bands.get(idx).push(m);
+  });
+  explodeGroups = { groups: [] };
+  bands.forEach((ms, idx)=>{
+    const g = new THREE.Group();
+    g.userData.band = idx;
+    realModel.add(g);
+    ms.forEach(m=>g.attach(m));
+    explodeGroups.groups.push(g);
+  });
+}
+function explodeApply(f){
+  if(!realModel) return;
+  if(f>0) buildExplodeGroups();
+  if(explodeGroups) explodeGroups.groups.forEach(g=>{ g.position.y = g.userData.band * f; });
+}
+document.getElementById('explodeSlider').oninput = e=>explodeApply((+e.target.value)/100 * .9);
+document.getElementById('explodeOff').onclick = ()=>{
+  document.getElementById('explodeSlider').value = 0;
+  explodeApply(0);
+  document.getElementById('explodeWrap').style.display = 'none';
+  setTool('select');
+};
+
+// --- آپدیت مدل سه‌بعدی ---
+document.getElementById('updBtn').onclick = ()=>{
+  if(confirm('فایل GLB جدید جایگزین مدل فعلی می‌شود. ادامه؟')) document.getElementById('glbFile').click();
+};
+document.getElementById('glbFile').onchange = async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  toast('⏳ در حال آپلود مدل…');
+  try {
+    const res = await fetch('/upload', { method:'POST', body:f });
+    const d = await res.json();
+    if(d.ok){
+      toast('✅ مدل جدید ذخیره شد — صفحه ریفرش می‌شود');
+      setTimeout(()=>location.reload(), 1500);
+    } else toast('❌ فایل معتبر GLB نیست');
+  } catch { toast('❌ خطا در آپلود — سرور اجرا نیست؟'); }
+  e.target.value = '';
+};
+
+/* ================= برنامه زمانبندی تفصیلی (WBS) ================= */
+const WBS_VERSION = 2;
+const WBS_TEMPLATE = [
+  { p:'۱. گودبرداری و پی‌سازی', items:['نقشه‌برداری و پیکنی','گودبرداری مکانیکی','برداشت خاک اضافی و اطفاح','بتن مگر (۵ سانت)','آرمه‌بندی فونداسیون','قالب‌بندی فونداسیون','بتن‌ریزی فونداسیون','نصب آبندون و فاضلاب اولیه','قلاب‌گذاری ستون‌ها','برگردانی و کوبیدن خاک','هم‌کف‌سازی و کوبیده'] },
+  { p:'۲. اسکلت بتنی', items:['آرمه‌بندی ستون‌های طبقه همکف','قالب‌بندی ستون‌های همکف','بتن‌ریزی ستون‌های همکف','دیوار برشی / مهاربندی (در صورت نیاز)','تیرچه و بلوک سقف همکف','میگرد و بتن‌ریزی سقف همکف','آرمه‌بندی ستون‌های طبقه اول','قالب‌بندی ستون‌های اول','بتن‌ریزی ستون‌های اول','سقف طبقه اول / بام','میگرد و بتن‌ریزی سقف بام','پرکردن درزها و ترمیم بتن'] },
+  { p:'۳. دیوار چینی و بنایی', items:['دیوار چینی طبقه همکف (داخلی)','دیوار چینی طبقه همکف (خارجی)','دیوار چینی طبقه اول (داخلی)','دیوار چینی طبقه اول (خارجی)','نعل درگاه‌ها','شاطبه‌گیری و دوغاب‌گیری','کالیبل و زیر سقف','پرکردن درز و سوراخ‌ها','قوطی‌کشی و آماده‌سازی درب و پنجره'] },
+  { p:'۴. تاسیسات مکانیکی — آب و فاضلاب', items:['لوله‌کشی فاضلاب اصلی طبقه همکف','لوله‌کشی فاضلاب طبقه اول','سیفون‌ها و شیرآلات قائم','لوله‌کشی آب سرد همکف','لوله‌کشی آب سرد اول','لوله‌کشی آب گرم همکف','لوله‌کشی آب گرم اول','آب‌رسانی حیاط و شیر باغ‌بان','تست فشار لوله‌کشی آب','تست آب‌بندی فاضلاب'] },
+  { p:'۵. تاسیسات مکانیکی — گرمایش و سرمایش', items:['لوله‌کشی هدر شوفاژ','لوله‌کشی رفت و برگشت رادیاتورها','نصب رادیاتورها / فن‌کویل‌ها','نصب پکیج / دیگ موتورخانه','داکت‌کشی و کانال','نصب داکت اسپیلت / کولر گازی','لوله‌کشی گاز شهری','شیرهای هواگیری و تخلیه','تست و راه‌اندازی موتورخانه'] },
+  { p:'۶. تاسیسات برقی', items:['لوله‌کشی برق همکف','لوله‌کشی برق طبقه اول','سیم‌کشی مدارهای روشنایی','سیم‌کشی پریزها','جعبه فیوز و کلید اصلی','تخته کلید و پریزها','روشنایی سقف‌ها','روشنایی پله و نور مخفی','آنتن، تلفن و شبکه','سیم‌کشی زنگ درب و آیفون','سیستم ارت (زمین) و تست','کنتور و انشعاب برق'] },
+  { p:'۷. درب و پنجره', items:['سفارش و اندازه‌گیری پنجره‌ها','نصب قاب پنجره‌های آلومینیوم','شیشه‌ریزی / کرتین‌وال','نصب درب ورودی ضدسرقت','نصب درب‌های داخلی چوبی','نصب درب‌های کابین سرویس','نرده استیل پله و بالکن','سایبان ورودی'] },
+  { p:'۸. نازک‌کاری — اندود و کف', items:['گچ و خاک سقف‌ها','گچ و خاک دیوارها','سفیدکاری (گچ روکش)','گچ بری و نور مخفی (در صورت نیاز)','کف‌سازی و شیب‌بندی سرویس‌ها','آب‌بندی سرویس‌های بهداشتی','سرامیک / پرسلان کف همکف','سرامیک / پرسلان کف اول','کاشی دیوار سرویس‌ها','سنگ پله و بین‌پله','قرنیز'] },
+  { p:'۹. نازک‌کاری — تجهیزات و تکمیلی', items:['کابینت آشپزخانه (سفارش و نصب)','صفحه کابینت (کورین / گرانیت)','سینک و شیرآلات آشپزخانه','توالت فرنگی و روشویی','نصب شیرآلات سرویس‌ها','درب کابین و یراق‌آلات','رنگ روغنی / پلاستیک دیوارها','سقف کاذب (در صورت نیاز)','روشنایی‌های تزئینی','نصب هود و اجاق'] },
+  { p:'۱۰. نما', items:['داربست و تجهیز','زیرسازی و رابیتس','نصب سنگ نما','نصب آجر / ترموود (بسته به تیپ)','بندکشی','شستشوی نما','ناودانی و زهکشی بام','نورپردازی نما','برداشت داربست'] },
+  { p:'۱۱. بام', items:['شیب‌بندی و نازک‌کاری بام','عایق‌بندی و ایزوگام','کف‌سازی قابل شستشو','دوبچ و سیفون بام','آلر و جان‌پناه','سوله / آلاچیق بام (در صورت نیاز)'] },
+  { p:'۱۲. محوطه‌سازی', items:['جفت‌کف دور بنا','جدول‌گذاری','موزاییک و سنگفرش پیاده‌رو','پارکینگ و رمپ','کاشت درخت','چمن‌کاری','آبیاری قطره‌ای','روشنایی محوطه','درب متحرک و جک','حصارکشی داخلی'] },
+  { p:'۱۳. تست، تاییدیه و تحویل', items:['تست نهایی تاسیسات مکانیکی','تست نهایی برق','گرفتن تاییدیه‌های شهرداری','انشعابات نهایی (آب، برق، گاز)','نظافت و تحویل موقت','رفع نقایص دوره تحویل'] },
+];
+function structTemplate(){
+  const t = JSON.parse(JSON.stringify(WBS_TEMPLATE));
+  const sk = t.find(x=>x.p.startsWith('۲.'));
+  if(CFG.struct==='steel' && sk){
+    sk.p = '۲. اسکلت فولادی';
+    sk.items = ['گریدینگ و پلیت‌بندی ستون‌ها','تامین و برش ستون‌های باکس/تیرآهن','نصب و پلمپ صفحات ستون','نصب ستون‌های فولادی','نصب تیرهای اصلی سقف','اتصالات جوشی و تست جوش','اتصالات پیچی (بولت)','سقف کامپوزیت (تیرچه/گل‌میخ)','بتن‌ریزی سقف کامپوزیت','قالب کارتنی و برگشت','آنتی‌راست و رنگ اسکلت'];
+  }
+  if(CFG.struct==='lsf' && sk){
+    sk.p = '۲. اسکلت LSF';
+    sk.items = ['فونداسیون و پلیت‌های LSF','پروفایل‌های عمودی دیوارها','پروفایل‌های تیر سقف','پوشش سقف و دیافراگم','پیچ و اتصالات','پنل ساندویچی سقف','تاسیسات داخل دیوارهای LSF','پوشش گچ‌فیبره / سیمانی دیوارها'];
+  }
+  return t;
+}
+let wbs = S('wbs');
+const _wbsVer = S('wbsVer') || 1;
+const _wbsStruct = S('wbsStruct');
+if(!wbs || !wbs.v1 || _wbsVer < WBS_VERSION || _wbsStruct !== CFG.struct){
+  // حفظ تیک‌های قبلی بر اساس متن آیتم
+  const oldDone = {};
+  if(wbs) Object.keys(wbs).forEach(vid=>wbs[vid].forEach(ph=>ph.items.forEach(it=>{ if(it.done) oldDone[it.t]=true; })));
+  wbs = {};
+  DATA.fronts.filter(f=>f.type==='villa').forEach(f=>{
+    wbs[f.id] = structTemplate().map(ph=>({p:ph.p, items:ph.items.map(t=>({t, done:!!oldDone[t]}))}));
+  });
+  save('wbs', wbs);
+  save('wbsVer', WBS_VERSION);
+  save('wbsStruct', CFG.struct);
+}
+let wbsVilla = 'v1';
+function wbsProgress(id){
+  const all = wbs[id].flatMap(ph=>ph.items);
+  return all.length ? Math.round(all.filter(i=>i.done).length / all.length * 100) : 0;
+}
+function renderWbs(){
+  const villas = DATA.fronts.filter(f=>f.type==='villa');
+  document.getElementById('wbsTabs').innerHTML = villas.map(v=>
+    `<button class="chip ${v.id===wbsVilla?'on':''}" style="--c:${v.css}" data-v="${v.id}">${v.name.split('—')[0].trim()} <b>${wbsProgress(v.id)}٪</b></button>`).join('');
+  document.querySelectorAll('#wbsTabs .chip').forEach(c=>c.onclick=()=>{ wbsVilla=c.dataset.v; renderWbs(); });
+  const v = villas.find(x=>x.id===wbsVilla);
+  const total = wbs[wbsVilla].flatMap(p=>p.items);
+  const done = total.filter(i=>i.done).length;
+  document.getElementById('wbsSummary').innerHTML = `
+    <div class="box">✅ انجام‌شده: <b>${done}</b></div>
+    <div class="box">⏳ باقی‌مانده: <b>${total.length-done}</b></div>
+    <div class="box">📈 پیشرفت ریز: <b>${wbsProgress(wbsVilla)}٪</b></div>`;
+  document.getElementById('wbsBody').innerHTML = wbs[wbsVilla].map((ph,pi)=>{
+    const d = ph.items.filter(i=>i.done).length;
+    const pct = Math.round(d/ph.items.length*100);
+    return `<div class="rsec">
+      <div class="rsecHead">${ph.p}
+        <span style="margin-right:auto;font-size:11px;color:${pct===100?'#2fbf71':'#f4a833'}">${d}/${ph.items.length} — ${pct}٪</span>
+      </div>
+      <div class="mini" style="height:4px;border-radius:2px;background:#1d2740;overflow:hidden;margin-bottom:8px"><i style="display:block;height:100%;width:${pct}%;background:${pct===100?'#2fbf71':'#f4a833'}"></i></div>
+      ${ph.items.map((it,ii)=>`
+        <div class="witem ${it.done?'done':''}" onclick="window.__wbsToggle('${wbsVilla}',${pi},${ii})">
+          <span class="wchk">${it.done?'✅':'⬜'}</span><span>${it.t}</span>
+          <button class="del" onclick="event.stopPropagation();window.__wbsDel('${wbsVilla}',${pi},${ii})">✕</button>
+        </div>`).join('')}
+      <div class="drow" style="margin-top:8px">
+        <input id="wbsNew${pi}" placeholder="افزودن آیتم جدید به این مرحله..." style="flex:1">
+        <button class="btn btn-s" style="padding:5px 12px;font-size:11px" onclick="window.__wbsAdd('${wbsVilla}',${pi})">➕</button>
+      </div>
+    </div>`;
+  }).join('');
+  // همگام‌سازی درصد پیشرفت جبهه در داشبورد و مدل
+  const front = DATA.fronts.find(f=>f.id===wbsVilla);
+  front.progress = wbsProgress(wbsVilla);
+  save('frontProgress', DATA.fronts.map(f=>({id:f.id, p:f.progress})));
+  renderFronts();
+}
+window.__wbsToggle = (vid,pi,ii)=>{ wbs[vid][pi].items[ii].done = !wbs[vid][pi].items[ii].done; save('wbs',wbs); renderWbs(); };
+window.__wbsDel = (vid,pi,ii)=>{ wbs[vid][pi].items.splice(ii,1); save('wbs',wbs); renderWbs(); };
+window.__wbsAdd = (vid,pi)=>{
+  const inp = document.getElementById('wbsNew'+pi);
+  if(inp.value.trim()){ wbs[vid][pi].items.push({t:inp.value.trim(), done:false}); save('wbs',wbs); renderWbs(); }
+};
+// بازگردانی درصد ذخیره‌شده جبهه‌ها
+const fp = S('frontProgress');
+if(fp) fp.forEach(x=>{ const f=DATA.fronts.find(y=>y.id===x.id); if(f) f.progress = x.p; });
+renderWbs();
+
+/* ================= دفتر مالی ================= */
+function ledgerEntries(){
+  const arr = [];
+  reports.forEach(r=>{
+    (r.buy||[]).forEach(b=>arr.push({ts:r.id, date:r.date, type:'خرید', desc:b.item||'', qty:b.qty||'', amount:n_(b.price), party:'—'}));
+    (r.cash||[]).forEach(c=>arr.push({ts:r.id, date:r.date, type:'تنخواه', desc:c.desc||'', qty:'', amount:n_(c.amount), party:c.to||''}));
+  });
+  return arr.sort((a,b)=>a.ts-b.ts).reverse();
+}
+let lgQuery = '', lgType = 'all';
+function renderLedger(){
+  let arr = ledgerEntries();
+  const buySum = arr.filter(x=>x.type==='خرید').reduce((a,x)=>a+x.amount,0);
+  const cashSum = arr.filter(x=>x.type==='تنخواه').reduce((a,x)=>a+x.amount,0);
+  // گروه‌بندی ماهانه
+  const months = {};
+  arr.forEach(x=>{ const m = (x.date||'').split('/').slice(0,2).join('/'); (months[m] = months[m]||[]).push(x); });
+  document.getElementById('lgSummary').innerHTML = `
+    <div class="box">🛒 کل خریدها: <b>${buySum.toLocaleString('fa-IR')}</b> ریال</div>
+    <div class="box">💰 کل تنخواه: <b>${cashSum.toLocaleString('fa-IR')}</b> ریال</div>
+    <div class="box">🧾 کل تراکنش‌ها: <b>${(buySum+cashSum).toLocaleString('fa-IR')}</b> ریال</div>
+    <div class="box">📅 ماه‌ها: <b>${Object.keys(months).length}</b></div>`
+    + Object.entries(months).map(([m,xs])=>`<div class="box">📆 ${m}: <b>${xs.reduce((a,x)=>a+x.amount,0).toLocaleString('fa-IR')}</b></div>`).join('');
+  if(lgQuery) arr = arr.filter(x=>(x.desc+' '+x.party+' '+x.date+' '+x.type+' '+x.qty).includes(lgQuery));
+  if(lgType!=='all') arr = arr.filter(x=>x.type===lgType);
+  document.getElementById('lgTable').innerHTML = arr.length ? `<table style="width:100%;font-size:11.5px;color:#c6cedb;border-collapse:collapse">
+    <tr>${['تاریخ','نوع','شرح','مقدار','گیرنده','مبلغ (ریال)'].map(h=>`<th style="text-align:right;padding:5px 8px;color:#8b96a8;border-bottom:1px solid rgba(255,255,255,.1)">${h}</th>`).join('')}</tr>
+    ${arr.map(x=>`<tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+      <td style="padding:5px 8px">${x.date}</td>
+      <td><span class="badge ${x.type==='خرید'?'b-draft':'b-sent'}">${x.type}</span></td>
+      <td>${x.desc}</td><td>${x.qty||'—'}</td><td>${x.party}</td>
+      <td style="font-weight:700;color:${x.type==='خرید'?'#f4a833':'#2fbf71'}">${x.amount.toLocaleString('fa-IR')}</td>
+    </tr>`).join('')}</table>` : '<div class="empty">تراکنشی یافت نشد — از گزارش روزانه ثبت کنید</div>';
+}
+document.getElementById('lgSearch').oninput = e=>{ lgQuery = e.target.value.trim(); renderLedger(); };
+document.getElementById('lgType').onchange = e=>{ lgType = e.target.value; renderLedger(); };
+
+/* ================= انبار مصالح ================= */
+let inventory = S('inventory') || [
+  {item:'سیمان تیپ ۲', unit:'کیسه', qty:40, min:50},
+  {item:'ماسه', unit:'متر مکعب', qty:12, min:8},
+  {item:'بلوک سیمانی', unit:'عدد', qty:350, min:150},
+  {item:'تیرچه', unit:'متر', qty:60, min:40},
+];
+function renderInventory(){
+  const low = inventory.filter(x=>(+x.qty||0) < (+x.min||0)).length;
+  document.getElementById('invList').innerHTML = (low? `<div class="rem urgent" style="margin-bottom:12px">⚠️ <b>${low} قلم</b> کمتر از حد هشدار است — سفارش دهید</div>`:'') +
+    `<table style="width:100%;font-size:12px;color:#c6cedb;border-collapse:collapse">
+    <tr>${['مصالح','واحد','موجودی','حد هشدار','وضعیت',''].map(h=>`<th style="text-align:right;padding:6px 8px;color:#8b96a8;border-bottom:1px solid rgba(255,255,255,.1)">${h}</th>`).join('')}</tr>
+    ${inventory.map((x,i)=>`<tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+      <td style="padding:6px 8px;font-weight:600">${x.item}</td><td>${x.unit}</td>
+      <td><button class="btn btn-s" style="padding:1px 8px;margin:0 2px;font-size:11px" onclick="window.__invQty(${i},-1)">−</button><b>${(+x.qty||0).toLocaleString('fa-IR')}</b><button class="btn btn-s" style="padding:1px 8px;margin:0 2px;font-size:11px" onclick="window.__invQty(${i},1)">+</button></td>
+      <td>${(+x.min||0).toLocaleString('fa-IR')}</td>
+      <td>${(+x.qty||0)<(+x.min||0)?'<span class="badge b-draft">کمبود</span>':'<span class="badge b-sent">کافی</span>'}</td>
+      <td><button class="del" style="width:28px;height:28px;border-radius:8px;border:none;background:rgba(224,82,82,.15);color:#e05252;cursor:pointer" onclick="window.__invDel(${i})">✕</button></td>
+    </tr>`).join('')}</table>`;
+}
+window.__invQty = (i,d)=>{ inventory[i].qty = (+inventory[i].qty||0)+d; save('inventory',inventory); renderInventory(); };
+window.__invDel = i=>{ inventory.splice(i,1); save('inventory',inventory); renderInventory(); };
+document.getElementById('invAdd').onclick = ()=>{
+  const item = document.getElementById('invItem').value.trim();
+  if(!item){ toast('⚠️ نام مصالح را وارد کنید'); return; }
+  inventory.push({item, unit:document.getElementById('invUnit').value.trim(), qty:+document.getElementById('invQty').value||0, min:+document.getElementById('invMin').value||0});
+  save('inventory', inventory);
+  ['invItem','invUnit','invQty','invMin'].forEach(id=>document.getElementById(id).value='');
+  renderInventory(); toast('✅ به انبار اضافه شد');
+};
+
+/* ================= پیمانکاران ================= */
+let contractors = S('contractors') || [
+  {name:'گروه بتن‌ریز جمال‌حسینی', work:'اسکلت و بتن', phone:'۰۹۱۲...', amount:'', paid:''},
+];
+function renderContractors(){
+  document.getElementById('ctGrid').innerHTML = contractors.map((c,i)=>`
+    <div class="dcard" style="--c:#f4a833;cursor:default">
+      <h3>👷 ${c.name}</h3>
+      <div class="sub" style="margin:6px 0">🔧 ${c.work||'—'} ${c.phone?' • 📞 '+c.phone:''}</div>
+      ${c.amount?`<div class="sub">📄 قرارداد: <b>${(+c.amount).toLocaleString('fa-IR')}</b> ریال</div>`:''}
+      ${c.paid?`<div class="sub">✔ پرداخت‌شده: <b>${(+c.paid).toLocaleString('fa-IR')}</b> ریال</div>`:''}
+      <div style="margin-top:8px"><button class="btn btn-s" style="padding:4px 12px;font-size:10.5px" onclick="window.__ctEdit(${i})">✏️ ویرایش</button></div>
+    </div>`).join('');
+}
+window.__ctEdit = i=>{
+  const c = contractors[i];
+  const nv = prompt('نام گروه:', c.name); if(nv===null) return;
+  const wk = prompt('رشته کاری:', c.work); if(wk===null) return;
+  const ph = prompt('تلفن:', c.phone); if(ph===null) return;
+  const am = prompt('مبلغ قرارداد (ریال):', c.amount); if(am===null) return;
+  const pd = prompt('پرداخت‌شده (ریال):', c.paid); if(pd===null) return;
+  contractors[i] = {name:nv||c.name, work:wk, phone:ph, amount:am, paid:pd};
+  save('contractors', contractors); renderContractors();
+};
+document.getElementById('ctAdd').onclick = ()=>{
+  const name = document.getElementById('ctName').value.trim();
+  if(!name){ toast('⚠️ نام گروه را وارد کنید'); return; }
+  contractors.push({name, work:document.getElementById('ctWork').value.trim(), phone:document.getElementById('ctPhone').value.trim(), amount:document.getElementById('ctAmount').value.trim(), paid:''});
+  save('contractors', contractors);
+  ['ctName','ctWork','ctPhone','ctAmount'].forEach(id=>document.getElementById(id).value='');
+  renderContractors(); toast('✅ پیمانکار اضافه شد');
+};
+
+/* ================= گالری ================= */
+let galQuery = '';
+function renderGallery(){
+  const items = [];
+  reports.slice().reverse().forEach(r=>{
+    (r.imgs||[]).forEach(s=>items.push({img:s, date:r.date, text:[r.done,r.next,r.front].join(' ')}));
+  });
+  let arr = galQuery ? items.filter(x=>(x.date+' '+x.text).includes(galQuery)) : items;
+  document.getElementById('galGrid').innerHTML = arr.length
+    ? `<div class="gal">${arr.map(x=>`<div class="gitem" onclick="window.__galImg('${x.img.length}')"><img src="${x.img}"><div class="gcap">📅 ${x.date}<br>${x.text.slice(0,60)||''}</div></div>`).join('')}</div>`
+    : `<div class="empty">عکسی یافت نشد — از گزارش روزانه عکس اضافه کنید</div>`;
+  window.__galImgs = arr;
+}
+document.getElementById('galSearch').oninput = e=>{ galQuery = e.target.value.trim(); renderGallery(); };
+document.addEventListener('click', e=>{
+  const gi = e.target.closest('.gitem');
+  if(gi && window.__galImgs){
+    const idx = [...gi.parentElement.children].indexOf(gi);
+    document.getElementById('imgBig').src = window.__galImgs[idx].img;
+    document.getElementById('imgModal').style.display = 'flex';
+  }
+});
+
+/* ================= یادآورها ================= */
+let reminders = S('reminders') || [];
+function renderReminders(){
+  const auto = [];
+  const today = document.getElementById('rDate').value;
+  if(!reports.some(r=>r.date===today)) auto.push('📝 گزارش روزانه امروز هنوز ثبت نشده است!');
+  const low = inventory.filter(x=>(+x.qty||0)<(+x.min||0));
+  low.forEach(x=>auto.push(`📦 کمبود «${x.item}» در انبار (${x.qty} از ${x.min} ${x.unit})`));
+  document.getElementById('autoReminders').innerHTML = auto.length
+    ? auto.map(a=>`<div class="rem urgent">🔔 ${a}</div>`).join('') : '<div class="rem">✅ همه‌چیز مرتب است</div>';
+  document.getElementById('remList').innerHTML = reminders.length
+    ? reminders.map((r,i)=>`<div class="rem ${r.done?'done':''}">
+        <span style="cursor:pointer" onclick="window.__remDone(${i})">${r.done?'✅':'⬜'}</span>
+        <b>${r.text}</b><span style="color:#8b96a8;font-size:11px">📅 ${r.date||''}</span>
+        <button class="del" style="margin-right:auto;border:none;background:none;color:#e05252;cursor:pointer" onclick="window.__remDel(${i})">✕</button>
+      </div>`).join('') : '<div class="empty">یادآوری ثبت نشده</div>';
+}
+window.__remDone = i=>{ reminders[i].done = !reminders[i].done; save('reminders',reminders); renderReminders(); };
+window.__remDel = i=>{ reminders.splice(i,1); save('reminders',reminders); renderReminders(); };
+document.getElementById('remAdd').onclick = ()=>{
+  const t = document.getElementById('remText').value.trim();
+  if(!t){ toast('⚠️ متن یادآور را وارد کنید'); return; }
+  reminders.unshift({text:t, date:document.getElementById('remDate').value.trim(), done:false});
+  save('reminders', reminders);
+  document.getElementById('remText').value=''; document.getElementById('remDate').value='';
+  renderReminders(); toast('⏰ یادآور ثبت شد');
+};
+
+/* ================= حالت کارفرما (فقط دیدن) ================= */
+let viewerMode = false;
+document.getElementById('viewerBtn').onclick = ()=>{
+  viewerMode = !viewerMode;
+  document.body.classList.toggle('viewer', viewerMode);
+  document.getElementById('viewerBtn').classList.toggle('active', viewerMode);
+  document.getElementById('viewerBadge').classList.toggle('show', viewerMode);
+  if(viewerMode){
+    adminMode = false;
+    document.getElementById('adminBar').classList.remove('show');
+    document.getElementById('adminBadge').classList.remove('show');
+    document.getElementById('lockBtn').textContent = '🔓';
+    toast('👁️ حالت کارفرما: فقط مشاهده — برای ویرایش خاموش کنید');
+  }
+};
+const _wbsToggle = window.__wbsToggle;
+window.__wbsToggle = (vid,pi,ii)=>{
+  if(viewerMode){ toast('👁️ در حالت کارفرما امکان تغییر نیست'); return; }
+  _wbsToggle(vid,pi,ii);
+};
+
+/* ================= متره و برآورد ================= */
+const EST_TEMPLATE = [
+  { g:'۱. گودبرداری و پی', rows:[
+    ['گودبرداری','مترمکعب'],['بتن مگر','مترمکعب'],['آرمه‌بندی فونداسیون','کیلوگرم'],['قالب‌بندی','مترمربع'],['بتن فونداسیون','مترمکعب'],
+  ]},
+  { g:'۲. اسکلت', rows:[
+    ['آرمه‌بندی ستون و تیر','کیلوگرم'],['قالب‌بندی ستون','مترمربع'],['بتن ستون','مترمکعب'],['تیرچه','متر طول'],['بلوک سقف','عدد'],['بتن سقف','مترمکعب'],
+  ]},
+  { g:'۳. دیوار چینی', rows:[
+    ['دیوار چینی ۲۰ سانت','مترمربع'],['دیوار چینی ۱۰ سانت','مترمربع'],['شاطبه و دوغاب','مترمربع'],
+  ]},
+  { g:'۴. تاسیسات مکانیکی', rows:[
+    ['لوله فاضلاب ۱۰۰','متر طول'],['لوله آب سرد و گرم','متر طول'],['رادیاتور / فن‌کویل','عدد'],['پکیج / موتورخانه','دستگاه'],['داکت اسپیلت','دستگاه'],
+  ]},
+  { g:'۵. تاسیسات برقی', rows:[
+    ['لوله‌کشی برق','متر طول'],['سیم‌کشی','متر طول'],['تخته کلید','عدد'],['نقطه روشنایی','عدد'],
+  ]},
+  { g:'۶. نازک‌کاری', rows:[
+    ['گچ و خاک','مترمربع'],['سفیدکاری','مترمربع'],['سرامیک کف','مترمربع'],['کاشی دیوار','مترمربع'],['سنگ پله','متر طول'],['درب داخلی','عدد'],['کابینت','متر طول'],
+  ]},
+  { g:'۷. نما', rows:[
+    ['سنگ نما','مترمربع'],['آجر / ترموود نما','مترمربع'],['نورپردازی نما','نقطه'],
+  ]},
+  { g:'۸. بام', rows:[
+    ['ایزوگام','مترمربع'],['کف‌سازی بام','مترمربع'],
+  ]},
+  { g:'۹. محوطه', rows:[
+    ['جفت‌کف','مترمربع'],['جدول‌گذاری','متر طول'],['چمن و کاشت','مترمربع'],['روشنایی محوطه','نقطه'],
+  ]},
+];
+function estTemplate(){
+  const t = JSON.parse(JSON.stringify(EST_TEMPLATE));
+  const sk = t.find(x=>x.g.startsWith('۲.'));
+  if(CFG.struct==='steel' && sk){
+    sk.g = '۲. اسکلت فولادی';
+    sk.rows = [['ستون و تیرآهن','کیلوگرم'],['اتصالات جوش و پیچ','کیلوگرم'],['سقف کامپوزیت','مترمربع'],['گل‌میخ','عدد'],['آنتی‌راست','مترمربع'],['قالب کارتنی','مترمربع']];
+  }
+  if(CFG.struct==='lsf' && sk){
+    sk.g = '۲. اسکلت LSF';
+    sk.rows = [['پروفایل LSF','متر طول'],['پنل ساندویچی','مترمربع'],['پیچ و اتصالات','عدد'],['پوشش گچ‌فیبره','مترمربع']];
+  }
+  return t;
+}
+let meters = S('meters');
+if(!meters || !meters.v1 || S('metersStruct') !== CFG.struct){
+  meters = {};
+  DATA.fronts.filter(f=>f.type==='villa').concat([{id:'site', name:'محوطه مشترک'}]).forEach(f=>{
+    meters[f.id] = estTemplate().map(g=>({g:g.g, rows:g.rows.map(r=>({t:r[0], u:r[1], q:'', p:''}))}));
+  });
+  save('meters', meters);
+  save('metersStruct', CFG.struct);
+}
+let estVilla = 'v1';
+const estVillas = ()=>DATA.fronts.filter(f=>f.type==='villa').concat([{id:'site', name:'محوطه مشترک'}]);
+const estTotal = vid => meters[vid].flatMap(g=>g.rows).reduce((a,r)=>a + ((+r.q||0)*(+r.p||0)), 0);
+
+function renderEstimate(){
+  document.getElementById('estTabs').innerHTML = estVillas().map(v=>
+    `<button class="chip ${v.id===estVilla?'on':''}" style="--c:${v.css||'#9b59b6'}" data-v="${v.id}">${(v.name||'').split('—')[0].trim()} <b>${estTotal(v.id)>0? (estTotal(v.id)/1e6).toFixed(0)+'م' : ''}</b></button>`).join('');
+  document.querySelectorAll('#estTabs .chip').forEach(c=>c.onclick=()=>{ estVilla=c.dataset.v; renderEstimate(); });
+  const grand = estVillas().reduce((a,v)=>a+estTotal(v.id),0);
+  document.getElementById('estSummary').innerHTML = `
+    <div class="box">📐 برآورد این بخش: <b>${estTotal(estVilla).toLocaleString('fa-IR')}</b> ریال</div>
+    <div class="box">🏗️ برآورد کل پروژه: <b>${grand.toLocaleString('fa-IR')}</b> ریال</div>
+    <div class="box">≈ معادل: <b>${(grand/1e9).toFixed(2)}</b> میلیارد تومان</div>`;
+  document.getElementById('estBody').innerHTML = meters[estVilla].map((g,gi)=>{
+    const gsum = g.rows.reduce((a,r)=>a+((+r.q||0)*(+r.p||0)),0);
+    return `<div class="rsec">
+      <div class="rsecHead">${g.g} <button class="addRow btn btn-s" style="margin-right:auto" onclick="window.__estAddRow(${gi})">➕ ردیف</button>
+        <span style="margin-right:10px;font-size:11px;color:#f4a833">${gsum? gsum.toLocaleString('fa-IR')+' ریال':''}</span></div>
+      <div class="drow" style="font-size:10px;color:#8b96a8"><span style="flex:1.4">شرح</span><span style="flex:.7">واحد</span><span style="flex:.8">متره</span><span style="flex:1">فی (ریال)</span><span style="flex:1">جمع (ریال)</span><span style="width:28px"></span></div>
+      ${g.rows.map((r,ri)=>`
+        <div class="drow">
+          <input value="${r.t}" style="flex:1.4" onchange="window.__estSet(${gi},${ri},'t',this.value)">
+          <input value="${r.u}" style="flex:.7" onchange="window.__estSet(${gi},${ri},'u',this.value)">
+          <input value="${r.q}" class="num" style="flex:.8" placeholder="مقدار" onchange="window.__estSet(${gi},${ri},'q',this.value)">
+          <input value="${r.p}" class="money" style="flex:1" placeholder="فی" onchange="window.__estSet(${gi},${ri},'p',this.value)">
+          <span style="flex:1;font-size:11.5px;color:#2fbf71">${((+r.q||0)*(+r.p||0)).toLocaleString('fa-IR')}</span>
+          <button class="del" onclick="window.__estDelRow(${gi},${ri})">✕</button>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+window.__estSet = (gi,ri,k,v)=>{ meters[estVilla][gi].rows[ri][k] = v; save('meters',meters); renderEstimate(); };
+window.__estAddRow = gi=>{ meters[estVilla][gi].rows.push({t:'ردیف جدید', u:'—', q:'', p:''}); save('meters',meters); renderEstimate(); };
+window.__estDelRow = (gi,ri)=>{ meters[estVilla][gi].rows.splice(ri,1); save('meters',meters); renderEstimate(); };
+document.getElementById('estReset').onclick = ()=>{
+  if(!confirm('همه مقادیر متره و قیمت این بخش پاک شود؟ (ردیف‌ها می‌مانند)')) return;
+  meters[estVilla].forEach(g=>g.rows.forEach(r=>{r.q='';r.p='';}));
+  save('meters',meters); renderEstimate(); toast('♻️ متره پاک شد');
+};
+window.__estPrint = ()=>{
+  const v = estVillas().find(x=>x.id===estVilla);
+  const grand = estVillas().reduce((a,x)=>a+estTotal(x.id),0);
+  const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const logo = S('companyLogo');
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>برآورد ${esc(v.name)}</title>
+  <style>@page{size:A4;margin:14mm} body{font-family:Tahoma;font-size:11px;color:#1a1a1a}
+  .head{display:flex;align-items:center;gap:14px;border:2px solid #8a6d3b;border-radius:8px;padding:12px 16px;margin-bottom:10px}
+  .head img{height:60px;max-width:100px;object-fit:contain}
+  .co{font-size:15px;font-weight:bold;color:#5a4322;text-align:center;flex:1}
+  table{width:100%;border-collapse:collapse;font-size:10.5px}
+  th{background:#efe9dc;text-align:right;padding:5px 8px;border:1px solid #c8bda5;color:#5a4322}
+  td{padding:4px 8px;border:1px solid #ddd5c3}
+  .gt{background:#faf8f3;font-weight:bold;color:#5a4322}
+  .tot{font-weight:bold;font-size:12px;color:#5a4322}
+  .foot{margin-top:26px;display:flex;justify-content:space-between;font-size:10px;color:#666}
+  .sign{margin-top:40px;border-top:1.5px solid #8a6d3b;width:200px;text-align:center;padding-top:5px;font-weight:bold;font-size:10.5px}
+  </style></head><body>
+  <div class="head">${logo?`<img src="${logo}">`:''}<div class="co">برآورد هزینه — ${esc(v.name||'محوطه مشترک')}<br><span style="font-size:10px;font-weight:normal">${CFG.name}</span></div></div>
+  <table><tr><th>ردیف</th><th>شرح</th><th>واحد</th><th>متره</th><th>فی (ریال)</th><th>جمع (ریال)</th></tr>
+  ${meters[estVilla].map((g,gi)=>{
+    const gs = g.rows.reduce((a,r)=>a+((+r.q||0)*(+r.p||0)),0);
+    return `<tr class="gt"><td colspan="6">${g.g}</td></tr>` +
+      g.rows.map((r,ri)=>`<tr><td>${gi+1}.${ri+1}</td><td>${esc(r.t)}</td><td>${esc(r.u)}</td><td>${(+r.q||0).toLocaleString('fa-IR')}</td><td>${(+r.p||0).toLocaleString('fa-IR')}</td><td>${((+r.q||0)*(+r.p||0)).toLocaleString('fa-IR')}</td></tr>`).join('') +
+      `<tr class="tot"><td colspan="5">جمع ${g.g}</td><td>${gs.toLocaleString('fa-IR')}</td></tr>`;
+  }).join('')}
+  <tr class="tot" style="background:#efe9dc"><td colspan="5">جمع کل</td><td>${estTotal(estVilla).toLocaleString('fa-IR')}</td></tr>
+  </table>
+  <div style="margin-top:10px;font-size:11px">برآورد کل پروژه: <b>${grand.toLocaleString('fa-IR')}</b> ریال ≈ <b>${(grand/1e9).toFixed(2)}</b> میلیارد تومان</div>
+  <div class="foot"><div>تاریخ تهیه: ${new Date().toLocaleDateString('fa-IR')}</div><div>مبالغ برآوردی است و با صورت‌وضعیت قطعی تعدیل می‌شود</div></div>
+  <div class="sign">مهندس ناظر / کارفرما</div>
+  <script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></body></html>`);
+  w.document.close();
+};
+
+/* ================= حلقه رندر ================= */
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  pinSprites.forEach(s=>{
+    if(s.userData.pulse !== undefined){
+      const ph = Math.sin(t*2.6 + String(s.userData.pulse).length);
+      const sc = 1.7 + ph*.5;
+      s.scale.set(sc,sc,1);
+      s.material.opacity = .4 - ph*.15;
+    } else {
+      s.scale.set(1.5+Math.sin(t*2.6)*.08, 1.5+Math.sin(t*2.6)*.08, 1);
+    }
+  });
+  // پالس نشانگرهای 🎯
+  let ringIdx = 0;
+  markGroup.children.forEach(s=>{
+    if(s.userData.spot){
+      s.scale.set(1.7+Math.sin(t*4)*.15, 1.7+Math.sin(t*4)*.15, 1);
+    }
+    if(s.userData.spotRing){
+      const ph = Math.sin(t*3 + ringIdx);
+      ringIdx++;
+      const sc = 2 + ph*.7;
+      s.scale.set(sc, sc, 1);
+      s.material.opacity = .5 - (ph+1)*.18;
+    }
+  });
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+window.__app = { get real(){ return realModel; }, __v: ()=>new THREE.Vector3(), __cam: ()=>camera };
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// شروع: بارگذاری مدل واقعی
+loadRealModel().then(()=>{
+  document.getElementById('loading').style.display = 'none';
+  // یادآور خودکار گزارش روز
+  const today = document.getElementById('rDate').value;
+  if(!reports.some(r=>r.date===today)) setTimeout(()=>toast('🔔 یادآور: گزارش روزانه امروز ثبت نشده!'), 2000);
+});
+</script>
+</body>
+</html>
